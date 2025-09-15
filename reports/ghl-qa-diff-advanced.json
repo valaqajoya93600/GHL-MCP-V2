@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2025-09-15T00:33:29.901Z",
+  "totals": {
+    "specEndpoints": 409,
+    "clientEndpoints": 418,
+    "canonicalMatches": 409,
+    "exactMatches": 409,
+    "paramNameOnlyDiffs": 0,
+    "missingFromClient": 0,
+    "clientOnly": 8
+  },
+  "paramNameOnlyDiffs": [],
+  "missingFromClient": [],
+  "clientOnly": [
+    {
+      "canon": "POST /contacts/tags/bulk",
+      "client": [
+        "POST /contacts/tags/bulk"
+      ]
+    },
+    {
+      "canon": "POST /contacts/business/bulk",
+      "client": [
+        "POST /contacts/business/bulk"
+      ]
+    },
+    {
+      "canon": "GET /locations",
+      "client": [
+        "GET /locations"
+      ]
+    },
+    {
+      "canon": "DELETE /calendars/events/appointments/{}",
+      "client": [
+        "DELETE /calendars/events/appointments/{eventId}"
+      ]
+    },
+    {
+      "canon": "GET /locations/timezones",
+      "client": [
+        "GET /locations/timezones"
+      ]
+    },
+    {
+      "canon": "GET /social-media-posting/oauth/{}/start",
+      "client": [
+        "GET /social-media-posting/oauth/{platform}/start"
+      ]
+    },
+    {
+      "canon": "GET /calendars/groups/slug/validate",
+      "client": [
+        "GET /calendars/groups/slug/validate"
+      ]
+    },
+    {
+      "canon": "GET /locations/{}/surveys/submissions",
+      "client": [
+        "GET /locations/{locationId}/surveys/submissions"
+      ]
+    }
+  ]
+}

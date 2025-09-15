@@ -1,0 +1,74 @@
+# saas-api — Detailed QA
+
+Version hints present in spec: 2021-04-15
+
+## Param-name-only Differences
+- None
+
+## Missing Endpoints
+- GET /saas-api/public-api/locations (Version: 2021-04-15)
+  - summary: Get locations by stripeId with companyId
+  - recommended: implement client method for this endpoint
+- PUT /saas-api/public-api/update-saas-subscription/{locationId} (Version: 2021-04-15)
+  - summary: Update SaaS subscription
+  - recommended: implement client method for this endpoint
+- POST /saas-api/public-api/bulk-disable-saas/{companyId} (Version: 2021-04-15)
+  - summary: Disable SaaS for locations
+  - recommended: implement client method for this endpoint
+- POST /saas-api/public-api/enable-saas/{locationId} (Version: 2021-04-15)
+  - summary: Enable SaaS for Sub-Account (Formerly Location)
+  - recommended: implement client method for this endpoint
+- POST /saas-api/public-api/pause/{locationId} (Version: 2021-04-15)
+  - summary: Pause location
+  - recommended: implement client method for this endpoint
+- POST /saas-api/public-api/update-rebilling/{companyId} (Version: 2021-04-15)
+  - summary: Update Rebilling
+  - recommended: implement client method for this endpoint
+- GET /saas-api/public-api/agency-plans/{companyId} (Version: 2021-04-15)
+  - summary: Get Agency Plans
+  - recommended: implement client method for this endpoint
+- GET /saas-api/public-api/get-saas-subscription/{locationId} (Version: 2021-04-15)
+  - summary: Get Location Subscription Details
+  - recommended: implement client method for this endpoint
+- POST /saas-api/public-api/bulk-enable-saas/{companyId} (Version: 2021-04-15)
+  - summary: Bulk Enable SaaS
+  - recommended: implement client method for this endpoint
+- GET /saas-api/public-api/saas-locations/{companyId} (Version: 2021-04-15)
+  - summary: Get SaaS Locations
+  - recommended: implement client method for this endpoint
+- GET /saas-api/public-api/saas-plan/{planId} (Version: 2021-04-15)
+  - summary: Get SaaS Plan
+  - recommended: implement client method for this endpoint
+- GET /saas/locations (Version: 2021-04-15)
+  - summary: Get locations by stripeId with companyId
+  - recommended: implement client method for this endpoint
+- PUT /saas/update-saas-subscription/{locationId} (Version: 2021-04-15)
+  - summary: Update SaaS subscription
+  - recommended: implement client method for this endpoint
+- POST /saas/bulk-disable-saas/{companyId} (Version: 2021-04-15)
+  - summary: Disable SaaS for locations
+  - recommended: implement client method for this endpoint
+- POST /saas/enable-saas/{locationId} (Version: 2021-04-15)
+  - summary: Enable SaaS for Sub-Account (Formerly Location)
+  - recommended: implement client method for this endpoint
+- POST /saas/pause/{locationId} (Version: 2021-04-15)
+  - summary: Pause location
+  - recommended: implement client method for this endpoint
+- POST /saas/update-rebilling/{companyId} (Version: 2021-04-15)
+  - summary: Update Rebilling
+  - recommended: implement client method for this endpoint
+- GET /saas/agency-plans/{companyId} (Version: 2021-04-15)
+  - summary: Get Agency Plans
+  - recommended: implement client method for this endpoint
+- GET /saas/get-saas-subscription/{locationId} (Version: 2021-04-15)
+  - summary: Get Location Subscription Details
+  - recommended: implement client method for this endpoint
+- POST /saas/bulk-enable-saas/{companyId} (Version: 2021-04-15)
+  - summary: Bulk Enable SaaS
+  - recommended: implement client method for this endpoint
+- GET /saas/saas-locations/{companyId} (Version: 2021-04-15)
+  - summary: Get SaaS Locations
+  - recommended: implement client method for this endpoint
+- GET /saas/saas-plan/{planId} (Version: 2021-04-15)
+  - summary: Get SaaS Plan
+  - recommended: implement client method for this endpoint

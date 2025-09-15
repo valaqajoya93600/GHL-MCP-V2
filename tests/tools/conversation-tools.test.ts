@@ -1,6 +1,6 @@
 /**
  * Unit Tests for Conversation Tools
- * Tests all 7 messaging and conversation MCP tools
+ * Tests all 20 messaging and conversation MCP tools
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
@@ -17,9 +17,9 @@ describe('ConversationTools', () => {
   });
 
   describe('getToolDefinitions', () => {
-    it('should return 7 conversation tool definitions', () => {
+    it('should return 20 conversation tool definitions', () => {
       const tools = conversationTools.getToolDefinitions();
-      expect(tools).toHaveLength(7);
+      expect(tools).toHaveLength(20);
       
       const toolNames = tools.map(tool => tool.name);
       expect(toolNames).toEqual([
@@ -29,7 +29,20 @@ describe('ConversationTools', () => {
         'get_conversation',
         'create_conversation',
         'update_conversation',
-        'get_recent_messages'
+        'get_recent_messages',
+        'delete_conversation',
+        'get_email_message',
+        'get_message',
+        'upload_message_attachments',
+        'update_message_status',
+        'add_inbound_message',
+        'add_outbound_call',
+        'get_message_recording',
+        'get_message_transcription',
+        'download_transcription',
+        'cancel_scheduled_message',
+        'cancel_scheduled_email',
+        'live_chat_typing'
       ]);
     });
 

@@ -34,6 +34,7 @@ import { SurveyTools } from './tools/survey-tools';
 import { StoreTools } from './tools/store-tools';
 import { ProductsTools } from './tools/products-tools.js';
 import { GHLConfig } from './types/ghl-types';
+import { VoiceAITools } from './tools/voice-ai-tools.js';
 
 // Load environment variables
 dotenv.config();
@@ -62,7 +63,9 @@ class GHLMCPHttpServer {
   private surveyTools: SurveyTools;
   private storeTools: StoreTools;
   private productsTools: ProductsTools;
+  private voiceAITools: VoiceAITools;
   private port: number;
+  private sseTransports: Map<string, SSEServerTransport> = new Map();
 
   constructor() {
     this.port = parseInt(process.env.PORT || process.env.MCP_SERVER_PORT || '8000');
@@ -105,6 +108,7 @@ class GHLMCPHttpServer {
     this.surveyTools = new SurveyTools(this.ghlClient);
     this.storeTools = new StoreTools(this.ghlClient);
     this.productsTools = new ProductsTools(this.ghlClient);
+    this.voiceAITools = new VoiceAITools(this.ghlClient);
 
     // Setup MCP handlers
     this.setupMCPHandlers();
@@ -188,6 +192,7 @@ class GHLMCPHttpServer {
         const surveyToolDefinitions = this.surveyTools.getTools();
         const storeToolDefinitions = this.storeTools.getTools();
         const productsToolDefinitions = this.productsTools.getTools();
+        const voiceAIToolDefinitions = this.voiceAITools.getTools();
         
         const allTools = [
           ...contactToolDefinitions,
@@ -206,7 +211,8 @@ class GHLMCPHttpServer {
           ...workflowToolDefinitions,
           ...surveyToolDefinitions,
           ...storeToolDefinitions,
-          ...productsToolDefinitions
+          ...productsToolDefinitions,
+          ...voiceAIToolDefinitions
         ];
         
         console.log(`[GHL MCP HTTP] Registered ${allTools.length} tools total`);
@@ -249,6 +255,8 @@ class GHLMCPHttpServer {
           result = await this.locationTools.executeTool(name, args || {});
         } else if (this.isEmailISVTool(name)) {
           result = await this.emailISVTools.executeTool(name, args || {});
+        } else if (this.isVoiceAITool(name)) {
+          result = await this.voiceAITools.executeTool(name, args || {});
         } else if (this.isSocialMediaTool(name)) {
           result = await this.socialMediaTools.executeTool(name, args || {});
         } else if (this.isMediaTool(name)) {
@@ -290,6 +298,15 @@ class GHLMCPHttpServer {
         );
       }
     });
+  }
+
+  private isVoiceAITool(toolName: string): boolean {
+    const names = [
+      'voiceai_create_agent', 'voiceai_list_agents', 'voiceai_get_agent', 'voiceai_patch_agent', 'voiceai_delete_agent',
+      'voiceai_list_call_logs', 'voiceai_get_call_log',
+      'voiceai_create_action', 'voiceai_get_action', 'voiceai_update_action', 'voiceai_delete_action'
+    ];
+    return names.includes(toolName);
   }
 
   /**
@@ -351,40 +368,52 @@ class GHLMCPHttpServer {
     });
 
     // SSE endpoint for ChatGPT MCP connection
-    const handleSSE = async (req: express.Request, res: express.Response) => {
-      const sessionId = req.query.sessionId || 'unknown';
-      console.log(`[GHL MCP HTTP] New SSE connection from: ${req.ip}, sessionId: ${sessionId}, method: ${req.method}`);
-      
+    // Handle GET to establish SSE stream
+    this.app.get('/sse', async (req, res) => {
       try {
-        // Create SSE transport (this will set the headers)
         const transport = new SSEServerTransport('/sse', res);
-        
-        // Connect MCP server to transport
-        await this.server.connect(transport);
-        
-        console.log(`[GHL MCP HTTP] SSE connection established for session: ${sessionId}`);
-        
-        // Handle client disconnect
-        req.on('close', () => {
-          console.log(`[GHL MCP HTTP] SSE connection closed for session: ${sessionId}`);
-        });
-        
+        await this.server.connect(transport); // This starts the SSE stream
+
+        const sid = transport.sessionId;
+        this.sseTransports.set(sid, transport);
+        console.log(`[GHL MCP HTTP] SSE GET connected. Session: ${sid} from ${req.ip}`);
+
+        transport.onclose = () => {
+          this.sseTransports.delete(sid);
+          console.log(`[GHL MCP HTTP] SSE closed. Session: ${sid}`);
+        };
       } catch (error) {
-        console.error(`[GHL MCP HTTP] SSE connection error for session ${sessionId}:`, error);
-        
-        // Only send error response if headers haven't been sent yet
+        console.error('[GHL MCP HTTP] SSE GET error:', error);
         if (!res.headersSent) {
           res.status(500).json({ error: 'Failed to establish SSE connection' });
         } else {
-          // If headers were already sent, close the connection
           res.end();
         }
       }
-    };
+    });
 
-    // Handle both GET and POST for SSE (MCP protocol requirements)
-    this.app.get('/sse', handleSSE);
-    this.app.post('/sse', handleSSE);
+    // Handle POST to deliver messages for an existing session
+    this.app.post('/sse', async (req, res) => {
+      const sessionId = (req.query.sessionId as string) || '';
+      const transport = sessionId ? this.sseTransports.get(sessionId) : undefined;
+
+      if (!transport) {
+        console.warn(`[GHL MCP HTTP] SSE POST for unknown/missing session: '${sessionId}' from ${req.ip}`);
+        res.status(400).json({ error: 'Unknown or missing sessionId' });
+        return;
+      }
+
+      try {
+        await transport.handlePostMessage(req as any, res);
+      } catch (error) {
+        console.error(`[GHL MCP HTTP] SSE POST error for session ${sessionId}:`, error);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Failed to handle SSE message' });
+        } else {
+          res.end();
+        }
+      }
+    });
 
     // Root endpoint with server info
     this.app.get('/', (req, res) => {

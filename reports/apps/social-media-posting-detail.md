@@ -1,0 +1,110 @@
+# social-media-posting — Detailed QA
+
+Version hints present in spec: 2021-07-28
+
+## Param-name-only Differences
+- GET /social-media-posting/{locationId}/posts/{id} (Version: 2021-07-28)
+  - summary: Get post
+  - client candidates: GET /social-media-posting/{locationId}/posts/{postId}
+  - recommended: update client path to '/social-media-posting/{locationId}/posts/{id}' to match spec
+- PUT /social-media-posting/{locationId}/posts/{id} (Version: 2021-07-28)
+  - summary: Edit post
+  - client candidates: PUT /social-media-posting/{locationId}/posts/{postId}
+  - recommended: update client path to '/social-media-posting/{locationId}/posts/{id}' to match spec
+- DELETE /social-media-posting/{locationId}/posts/{id} (Version: 2021-07-28)
+  - summary: Delete Post
+  - client candidates: DELETE /social-media-posting/{locationId}/posts/{postId}
+  - recommended: update client path to '/social-media-posting/{locationId}/posts/{id}' to match spec
+- DELETE /social-media-posting/{locationId}/accounts/{id} (Version: 2021-07-28)
+  - summary: Delete Account
+  - client candidates: DELETE /social-media-posting/{locationId}/accounts/{accountId}
+  - recommended: update client path to '/social-media-posting/{locationId}/accounts/{id}' to match spec
+- GET /social-media-posting/{locationId}/csv/{id} (Version: 2021-07-28)
+  - summary: Get CSV Post
+  - client candidates: GET /social-media-posting/{locationId}/csv/{csvId}
+  - recommended: update client path to '/social-media-posting/{locationId}/csv/{id}' to match spec
+- PATCH /social-media-posting/{locationId}/csv/{id} (Version: 2021-07-28)
+  - summary: Start CSV Finalize
+  - client candidates: PATCH /social-media-posting/{locationId}/csv/{csvId}
+  - recommended: update client path to '/social-media-posting/{locationId}/csv/{id}' to match spec
+- DELETE /social-media-posting/{locationId}/csv/{id} (Version: 2021-07-28)
+  - summary: Delete CSV
+  - client candidates: DELETE /social-media-posting/{locationId}/csv/{csvId}
+  - recommended: update client path to '/social-media-posting/{locationId}/csv/{id}' to match spec
+
+## Missing Endpoints
+- GET /social-media-posting/oauth/google/start (Version: 2021-07-28)
+  - summary: Starts OAuth For Google Account
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/{locationId}/google/locations/{accountId} (Version: 2021-07-28)
+  - summary: Get google business locations
+  - recommended: implement client method for this endpoint
+- POST /social-media-posting/oauth/{locationId}/google/locations/{accountId} (Version: 2021-07-28)
+  - summary: Set google business locations
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/facebook/start (Version: 2021-07-28)
+  - summary: Starts OAuth For Facebook Account
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/{locationId}/facebook/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Get facebook pages
+  - recommended: implement client method for this endpoint
+- POST /social-media-posting/oauth/{locationId}/facebook/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Attach facebook pages
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/instagram/start (Version: 2021-07-28)
+  - summary: Starts OAuth For Instagram Account
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/{locationId}/instagram/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Get Instagram Professional Accounts
+  - recommended: implement client method for this endpoint
+- POST /social-media-posting/oauth/{locationId}/instagram/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Attach Instagram Professional Accounts
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/linkedin/start (Version: 2021-07-28)
+  - summary: Starts OAuth For LinkedIn Account
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/{locationId}/linkedin/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Get Linkedin pages and profile
+  - recommended: implement client method for this endpoint
+- POST /social-media-posting/oauth/{locationId}/linkedin/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Attach linkedin pages and profile
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/twitter/start (Version: 2021-07-28)
+  - summary: Starts OAuth For Twitter Account
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/{locationId}/twitter/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Get Twitter profile
+  - recommended: implement client method for this endpoint
+- POST /social-media-posting/oauth/{locationId}/twitter/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Attach Twitter profile
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/tiktok/start (Version: 2021-07-28)
+  - summary: Starts OAuth For Tiktok Account
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/{locationId}/tiktok/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Get Tiktok profile
+  - recommended: implement client method for this endpoint
+- POST /social-media-posting/oauth/{locationId}/tiktok/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Attach Tiktok profile
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/tiktok-business/start (Version: 2021-07-28)
+  - summary: Starts OAuth For Tiktok Business Account
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/oauth/{locationId}/tiktok-business/accounts/{accountId} (Version: 2021-07-28)
+  - summary: Get Tiktok Business profile
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/{locationId}/categories (Version: 2021-07-28)
+  - summary: Get categories by location id
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/{locationId}/categories/{id} (Version: 2021-07-28)
+  - summary: Get categories by id
+  - recommended: implement client method for this endpoint
+- GET /social-media-posting/{locationId}/tags (Version: 2021-07-28)
+  - summary: Get tags by location id
+  - recommended: implement client method for this endpoint
+- POST /social-media-posting/{locationId}/tags/details (Version: 2021-07-28)
+  - summary: Get tags by ids
+  - recommended: implement client method for this endpoint
+- POST /social-media-posting/statistics (Version: 2021-07-28)
+  - summary: Get Social Media Statistics
+  - recommended: implement client method for this endpoint

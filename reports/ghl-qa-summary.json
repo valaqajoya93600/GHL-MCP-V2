@@ -1,0 +1,219 @@
+{
+  "generatedAt": "2025-09-15T00:33:29.803Z",
+  "totals": {
+    "specEndpoints": 409,
+    "clientEndpoints": 417
+  },
+  "apps": [
+    {
+      "app": "associations",
+      "specTotal": 10,
+      "implemented": 10,
+      "missing": 0
+    },
+    {
+      "app": "blogs",
+      "specTotal": 7,
+      "implemented": 7,
+      "missing": 0
+    },
+    {
+      "app": "businesses",
+      "specTotal": 5,
+      "implemented": 5,
+      "missing": 0
+    },
+    {
+      "app": "calendars",
+      "specTotal": 34,
+      "implemented": 34,
+      "missing": 0
+    },
+    {
+      "app": "campaigns",
+      "specTotal": 1,
+      "implemented": 1,
+      "missing": 0
+    },
+    {
+      "app": "companies",
+      "specTotal": 1,
+      "implemented": 1,
+      "missing": 0
+    },
+    {
+      "app": "contacts",
+      "specTotal": 32,
+      "implemented": 32,
+      "missing": 0
+    },
+    {
+      "app": "conversations",
+      "specTotal": 19,
+      "implemented": 19,
+      "missing": 0
+    },
+    {
+      "app": "courses",
+      "specTotal": 1,
+      "implemented": 1,
+      "missing": 0
+    },
+    {
+      "app": "custom-fields",
+      "specTotal": 8,
+      "implemented": 8,
+      "missing": 0
+    },
+    {
+      "app": "custom-menus",
+      "specTotal": 5,
+      "implemented": 5,
+      "missing": 0
+    },
+    {
+      "app": "email-isv",
+      "specTotal": 1,
+      "implemented": 1,
+      "missing": 0
+    },
+    {
+      "app": "emails",
+      "specTotal": 5,
+      "implemented": 5,
+      "missing": 0
+    },
+    {
+      "app": "forms",
+      "specTotal": 3,
+      "implemented": 3,
+      "missing": 0
+    },
+    {
+      "app": "funnels",
+      "specTotal": 7,
+      "implemented": 7,
+      "missing": 0
+    },
+    {
+      "app": "invoices",
+      "specTotal": 41,
+      "implemented": 41,
+      "missing": 0
+    },
+    {
+      "app": "links",
+      "specTotal": 6,
+      "implemented": 6,
+      "missing": 0
+    },
+    {
+      "app": "locations",
+      "specTotal": 29,
+      "implemented": 29,
+      "missing": 0
+    },
+    {
+      "app": "marketplace",
+      "specTotal": 7,
+      "implemented": 7,
+      "missing": 0
+    },
+    {
+      "app": "medias",
+      "specTotal": 7,
+      "implemented": 7,
+      "missing": 0
+    },
+    {
+      "app": "oauth",
+      "specTotal": 3,
+      "implemented": 3,
+      "missing": 0
+    },
+    {
+      "app": "objects",
+      "specTotal": 9,
+      "implemented": 9,
+      "missing": 0
+    },
+    {
+      "app": "opportunities",
+      "specTotal": 10,
+      "implemented": 10,
+      "missing": 0
+    },
+    {
+      "app": "payments",
+      "specTotal": 20,
+      "implemented": 20,
+      "missing": 0
+    },
+    {
+      "app": "phone-system",
+      "specTotal": 2,
+      "implemented": 2,
+      "missing": 0
+    },
+    {
+      "app": "products",
+      "specTotal": 27,
+      "implemented": 27,
+      "missing": 0
+    },
+    {
+      "app": "proposals",
+      "specTotal": 4,
+      "implemented": 4,
+      "missing": 0
+    },
+    {
+      "app": "saas-api",
+      "specTotal": 22,
+      "implemented": 22,
+      "missing": 0
+    },
+    {
+      "app": "snapshots",
+      "specTotal": 4,
+      "implemented": 4,
+      "missing": 0
+    },
+    {
+      "app": "social-media-posting",
+      "specTotal": 40,
+      "implemented": 40,
+      "missing": 0
+    },
+    {
+      "app": "store",
+      "specTotal": 18,
+      "implemented": 18,
+      "missing": 0
+    },
+    {
+      "app": "surveys",
+      "specTotal": 2,
+      "implemented": 2,
+      "missing": 0
+    },
+    {
+      "app": "users",
+      "specTotal": 7,
+      "implemented": 7,
+      "missing": 0
+    },
+    {
+      "app": "voice-ai",
+      "specTotal": 11,
+      "implemented": 11,
+      "missing": 0
+    },
+    {
+      "app": "workflows",
+      "specTotal": 1,
+      "implemented": 1,
+      "missing": 0
+    }
+  ]
+}

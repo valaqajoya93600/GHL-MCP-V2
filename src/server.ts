@@ -34,6 +34,7 @@ import { GHLConfig } from './types/ghl-types';
 import { ProductsTools } from './tools/products-tools.js';
 import { PaymentsTools } from './tools/payments-tools.js';
 import { InvoicesTools } from './tools/invoices-tools.js';
+import { VoiceAITools } from './tools/voice-ai-tools.js';
 
 // Load environment variables
 dotenv.config();
@@ -63,6 +64,7 @@ class GHLMCPServer {
   private productsTools: ProductsTools;
   private paymentsTools: PaymentsTools;
   private invoicesTools: InvoicesTools;
+  private voiceAITools: VoiceAITools;
 
   constructor() {
     // Initialize MCP server with capabilities
@@ -101,6 +103,7 @@ class GHLMCPServer {
     this.productsTools = new ProductsTools(this.ghlClient);
     this.paymentsTools = new PaymentsTools(this.ghlClient);
     this.invoicesTools = new InvoicesTools(this.ghlClient);
+    this.voiceAITools = new VoiceAITools(this.ghlClient);
 
     // Setup MCP handlers
     this.setupHandlers();
@@ -163,6 +166,7 @@ class GHLMCPServer {
         const productsToolDefinitions = this.productsTools.getTools();
         const paymentsToolDefinitions = this.paymentsTools.getTools();
         const invoicesToolDefinitions = this.invoicesTools.getTools();
+        const voiceAIToolDefinitions = this.voiceAITools.getTools();
         
         const allTools = [
           ...contactToolDefinitions,
@@ -183,7 +187,8 @@ class GHLMCPServer {
           ...storeToolDefinitions,
           ...productsToolDefinitions,
           ...paymentsToolDefinitions,
-          ...invoicesToolDefinitions
+          ...invoicesToolDefinitions,
+          ...voiceAIToolDefinitions
         ];
         
         process.stderr.write(`[GHL MCP] Registered ${allTools.length} tools total:\n`);
@@ -206,6 +211,7 @@ class GHLMCPServer {
         process.stderr.write(`[GHL MCP] - ${productsToolDefinitions.length} products tools\n`);
         process.stderr.write(`[GHL MCP] - ${paymentsToolDefinitions.length} payments tools\n`);
         process.stderr.write(`[GHL MCP] - ${invoicesToolDefinitions.length} invoices tools\n`);
+        process.stderr.write(`[GHL MCP] - ${voiceAIToolDefinitions.length} voice AI tools\n`);
         
         return {
           tools: allTools
@@ -268,6 +274,8 @@ class GHLMCPServer {
           result = await this.paymentsTools.handleToolCall(name, args || {});
         } else if (this.isInvoicesTool(name)) {
           result = await this.invoicesTools.handleToolCall(name, args || {});
+        } else if (this.isVoiceAITool(name)) {
+          result = await this.voiceAITools.executeTool(name, args || {});
         } else {
           throw new Error(`Unknown tool: ${name}`);
         }
@@ -348,6 +356,18 @@ class GHLMCPServer {
       'live_chat_typing'
     ];
     return conversationToolNames.includes(toolName);
+  }
+
+  /**
+   * Voice AI tools
+   */
+  private isVoiceAITool(toolName: string): boolean {
+    const names = [
+      'voiceai_create_agent', 'voiceai_list_agents', 'voiceai_get_agent', 'voiceai_patch_agent', 'voiceai_delete_agent',
+      'voiceai_list_call_logs', 'voiceai_get_call_log',
+      'voiceai_create_action', 'voiceai_get_action', 'voiceai_update_action', 'voiceai_delete_action'
+    ];
+    return names.includes(toolName);
   }
 
   /**

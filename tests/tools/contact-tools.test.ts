@@ -1,6 +1,6 @@
 /**
  * Unit Tests for Contact Tools
- * Tests all 7 contact management MCP tools
+ * Tests all 31 contact management MCP tools
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
@@ -17,9 +17,9 @@ describe('ContactTools', () => {
   });
 
   describe('getToolDefinitions', () => {
-    it('should return 7 contact tool definitions', () => {
+    it('should return 31 contact tool definitions', () => {
       const tools = contactTools.getToolDefinitions();
-      expect(tools).toHaveLength(7);
+      expect(tools).toHaveLength(31);
       
       const toolNames = tools.map(tool => tool.name);
       expect(toolNames).toEqual([
@@ -27,9 +27,33 @@ describe('ContactTools', () => {
         'search_contacts',
         'get_contact',
         'update_contact',
+        'delete_contact',
         'add_contact_tags',
         'remove_contact_tags',
-        'delete_contact'
+        'get_contact_tasks',
+        'create_contact_task',
+        'get_contact_task',
+        'update_contact_task',
+        'delete_contact_task',
+        'update_task_completion',
+        'get_contact_notes',
+        'create_contact_note',
+        'get_contact_note',
+        'update_contact_note',
+        'delete_contact_note',
+        'upsert_contact',
+        'get_duplicate_contact',
+        'get_contacts_by_business',
+        'get_contact_appointments',
+        'bulk_update_contact_tags',
+        'bulk_update_contact_business',
+        'add_contact_followers',
+        'remove_contact_followers',
+        'add_contact_to_campaign',
+        'remove_contact_from_campaign',
+        'remove_contact_from_all_campaigns',
+        'add_contact_to_workflow',
+        'remove_contact_from_workflow'
       ]);
     });
 
@@ -265,7 +289,7 @@ describe('ContactTools', () => {
 
       await expect(
         contactTools.executeTool('create_contact', { email: 'test@example.com' })
-      ).rejects.toThrow('Failed to create contact: Error: Network error');
+      ).rejects.toThrow('Failed to create contact: Network error');
     });
 
     it('should handle missing required fields', async () => {

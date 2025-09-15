@@ -517,7 +517,7 @@ export class SocialMediaTools {
   }
 
   private async getSocialTagsByIds(params: MCPGetTagsByIdsParams) {
-    const response = await this.ghlClient.getSocialTagsByIds({ tagIds: params.tagIds });
+    const response = await this.ghlClient.getSocialTagsByIds(params.tagIds);
     
     return {
       success: true,

@@ -1,0 +1,4032 @@
+{
+  "POST /associations/relations": {
+    "app": "associations",
+    "method": "POST",
+    "path": "/associations/relations",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /associations/relations/{recordId}": {
+    "app": "associations",
+    "method": "GET",
+    "path": "/associations/relations/{recordId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /associations/relations/{recordId}"
+  },
+  "DELETE /associations/relations/{relationId}": {
+    "app": "associations",
+    "method": "DELETE",
+    "path": "/associations/relations/{relationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /associations/relations/{relationId}"
+  },
+  "GET /associations/key/{key_name}": {
+    "app": "associations",
+    "method": "GET",
+    "path": "/associations/key/{key_name}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /associations/key/{key_name}"
+  },
+  "GET /associations/objectKey/{objectKey}": {
+    "app": "associations",
+    "method": "GET",
+    "path": "/associations/objectKey/{objectKey}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /associations/objectKey/{objectKey}"
+  },
+  "PUT /associations/{associationId}": {
+    "app": "associations",
+    "method": "PUT",
+    "path": "/associations/{associationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /associations/{associationId}": {
+    "app": "associations",
+    "method": "DELETE",
+    "path": "/associations/{associationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /associations/{associationId}": {
+    "app": "associations",
+    "method": "GET",
+    "path": "/associations/{associationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /associations": {
+    "app": "associations",
+    "method": "POST",
+    "path": "/associations",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /associations": {
+    "app": "associations",
+    "method": "GET",
+    "path": "/associations",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /blogs/posts/url-slug-exists": {
+    "app": "blogs",
+    "method": "GET",
+    "path": "/blogs/posts/url-slug-exists",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /blogs/posts/{postId}": {
+    "app": "blogs",
+    "method": "PUT",
+    "path": "/blogs/posts/{postId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /blogs/posts": {
+    "app": "blogs",
+    "method": "POST",
+    "path": "/blogs/posts",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /blogs/authors": {
+    "app": "blogs",
+    "method": "GET",
+    "path": "/blogs/authors",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /blogs/categories": {
+    "app": "blogs",
+    "method": "GET",
+    "path": "/blogs/categories",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /blogs/posts/all": {
+    "app": "blogs",
+    "method": "GET",
+    "path": "/blogs/posts/all",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /blogs/site/all": {
+    "app": "blogs",
+    "method": "GET",
+    "path": "/blogs/site/all",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /businesses/{businessId}": {
+    "app": "businesses",
+    "method": "PUT",
+    "path": "/businesses/{businessId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /businesses/{businessId}": {
+    "app": "businesses",
+    "method": "DELETE",
+    "path": "/businesses/{businessId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /businesses/{businessId}": {
+    "app": "businesses",
+    "method": "GET",
+    "path": "/businesses/{businessId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /businesses": {
+    "app": "businesses",
+    "method": "GET",
+    "path": "/businesses",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /businesses": {
+    "app": "businesses",
+    "method": "POST",
+    "path": "/businesses",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /calendars/groups": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/groups",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /calendars/groups": {
+    "app": "calendars",
+    "method": "POST",
+    "path": "/calendars/groups",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /calendars/groups/validate-slug": {
+    "app": "calendars",
+    "method": "POST",
+    "path": "/calendars/groups/validate-slug",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Missing in client (implement endpoint) | reconciled: spec tokens aligned in client"
+  },
+  "DELETE /calendars/groups/{groupId}": {
+    "app": "calendars",
+    "method": "DELETE",
+    "path": "/calendars/groups/{groupId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "PUT /calendars/groups/{groupId}": {
+    "app": "calendars",
+    "method": "PUT",
+    "path": "/calendars/groups/{groupId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "PUT /calendars/groups/{groupId}/status": {
+    "app": "calendars",
+    "method": "PUT",
+    "path": "/calendars/groups/{groupId}/status",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /calendars/events/appointments": {
+    "app": "calendars",
+    "method": "POST",
+    "path": "/calendars/events/appointments",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "PUT /calendars/events/appointments/{eventId}": {
+    "app": "calendars",
+    "method": "PUT",
+    "path": "/calendars/events/appointments/{eventId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /calendars/events/appointments/{eventId}"
+  },
+  "GET /calendars/events/appointments/{eventId}": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/events/appointments/{eventId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /calendars/events/appointments/{eventId}"
+  },
+  "GET /calendars/events": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/events",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /calendars/blocked-slots": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/blocked-slots",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /calendars/events/block-slots": {
+    "app": "calendars",
+    "method": "POST",
+    "path": "/calendars/events/block-slots",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Missing in client (implement endpoint) | reconciled: spec tokens aligned in client"
+  },
+  "PUT /calendars/events/block-slots/{eventId}": {
+    "app": "calendars",
+    "method": "PUT",
+    "path": "/calendars/events/block-slots/{eventId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /calendars/events/block-slots/{eventId}"
+  },
+  "GET /calendars/{calendarId}/free-slots": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/{calendarId}/free-slots",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /calendars/{calendarId}/free-slots"
+  },
+  "PUT /calendars/{calendarId}": {
+    "app": "calendars",
+    "method": "PUT",
+    "path": "/calendars/{calendarId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /calendars/{calendarId}": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/{calendarId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "DELETE /calendars/{calendarId}": {
+    "app": "calendars",
+    "method": "DELETE",
+    "path": "/calendars/{calendarId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "DELETE /calendars/events/{eventId}": {
+    "app": "calendars",
+    "method": "DELETE",
+    "path": "/calendars/events/{eventId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /calendars/appointments/{appointmentId}/notes": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/appointments/{appointmentId}/notes",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /calendars/appointments/{appointmentId}/notes": {
+    "app": "calendars",
+    "method": "POST",
+    "path": "/calendars/appointments/{appointmentId}/notes",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /calendars/appointments/{appointmentId}/notes/{noteId}": {
+    "app": "calendars",
+    "method": "PUT",
+    "path": "/calendars/appointments/{appointmentId}/notes/{noteId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /calendars/appointments/{appointmentId}/notes/{noteId}": {
+    "app": "calendars",
+    "method": "DELETE",
+    "path": "/calendars/appointments/{appointmentId}/notes/{noteId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /calendars/resources/{resourceType}/{id}": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/resources/{resourceType}/{id}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /calendars/resources/{resourceType}/{id}"
+  },
+  "PUT /calendars/resources/{resourceType}/{id}": {
+    "app": "calendars",
+    "method": "PUT",
+    "path": "/calendars/resources/{resourceType}/{id}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /calendars/resources/{resourceType}/{id}"
+  },
+  "DELETE /calendars/resources/{resourceType}/{id}": {
+    "app": "calendars",
+    "method": "DELETE",
+    "path": "/calendars/resources/{resourceType}/{id}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /calendars/resources/{resourceType}/{id}"
+  },
+  "GET /calendars/resources/{resourceType}": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/resources/{resourceType}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /calendars/resources/{resourceType}": {
+    "app": "calendars",
+    "method": "POST",
+    "path": "/calendars/resources/{resourceType}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /calendars/{calendarId}/notifications": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/{calendarId}/notifications",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /calendars/{calendarId}/notifications": {
+    "app": "calendars",
+    "method": "POST",
+    "path": "/calendars/{calendarId}/notifications",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /calendars/{calendarId}/notifications/{notificationId}": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars/{calendarId}/notifications/{notificationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "PUT /calendars/{calendarId}/notifications/{notificationId}": {
+    "app": "calendars",
+    "method": "PUT",
+    "path": "/calendars/{calendarId}/notifications/{notificationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "DELETE /calendars/{calendarId}/notifications/{notificationId}": {
+    "app": "calendars",
+    "method": "DELETE",
+    "path": "/calendars/{calendarId}/notifications/{notificationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /calendars": {
+    "app": "calendars",
+    "method": "GET",
+    "path": "/calendars",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /calendars": {
+    "app": "calendars",
+    "method": "POST",
+    "path": "/calendars",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /campaigns": {
+    "app": "campaigns",
+    "method": "GET",
+    "path": "/campaigns",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /companies/{companyId}": {
+    "app": "companies",
+    "method": "GET",
+    "path": "/companies/{companyId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /contacts/search": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/search",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /contacts/search/duplicate": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts/search/duplicate",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /contacts/{contactId}/tasks": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts/{contactId}/tasks",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /contacts/{contactId}/tasks": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/{contactId}/tasks",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /contacts/{contactId}/tasks/{taskId}": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts/{contactId}/tasks/{taskId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /contacts/{contactId}/tasks/{taskId}": {
+    "app": "contacts",
+    "method": "PUT",
+    "path": "/contacts/{contactId}/tasks/{taskId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /contacts/{contactId}/tasks/{taskId}": {
+    "app": "contacts",
+    "method": "DELETE",
+    "path": "/contacts/{contactId}/tasks/{taskId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /contacts/{contactId}/tasks/{taskId}/completed": {
+    "app": "contacts",
+    "method": "PUT",
+    "path": "/contacts/{contactId}/tasks/{taskId}/completed",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /contacts/{contactId}/appointments": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts/{contactId}/appointments",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /contacts/{contactId}/tags": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/{contactId}/tags",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /contacts/{contactId}/tags": {
+    "app": "contacts",
+    "method": "DELETE",
+    "path": "/contacts/{contactId}/tags",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /contacts/{contactId}/notes": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts/{contactId}/notes",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /contacts/{contactId}/notes": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/{contactId}/notes",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /contacts/{contactId}/notes/{id}": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts/{contactId}/notes/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /contacts/{contactId}/notes/{id}"
+  },
+  "PUT /contacts/{contactId}/notes/{id}": {
+    "app": "contacts",
+    "method": "PUT",
+    "path": "/contacts/{contactId}/notes/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /contacts/{contactId}/notes/{id}"
+  },
+  "DELETE /contacts/{contactId}/notes/{id}": {
+    "app": "contacts",
+    "method": "DELETE",
+    "path": "/contacts/{contactId}/notes/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /contacts/{contactId}/notes/{id}"
+  },
+  "POST /contacts/bulk/tags/update/{type}": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/bulk/tags/update/{type}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /contacts/bulk/business": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/bulk/business",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /contacts/{contactId}": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts/{contactId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /contacts/{contactId}": {
+    "app": "contacts",
+    "method": "PUT",
+    "path": "/contacts/{contactId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /contacts/{contactId}": {
+    "app": "contacts",
+    "method": "DELETE",
+    "path": "/contacts/{contactId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /contacts/upsert": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/upsert",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /contacts/business/{businessId}": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts/business/{businessId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /contacts/{contactId}/followers": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/{contactId}/followers",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /contacts/{contactId}/followers": {
+    "app": "contacts",
+    "method": "DELETE",
+    "path": "/contacts/{contactId}/followers",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /contacts/{contactId}/campaigns/{campaignId}": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/{contactId}/campaigns/{campaignId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /contacts/{contactId}/campaigns/{campaignId}": {
+    "app": "contacts",
+    "method": "DELETE",
+    "path": "/contacts/{contactId}/campaigns/{campaignId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /contacts/{contactId}/campaigns/removeAll": {
+    "app": "contacts",
+    "method": "DELETE",
+    "path": "/contacts/{contactId}/campaigns/removeAll",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /contacts/{contactId}/workflow/{workflowId}": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts/{contactId}/workflow/{workflowId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /contacts/{contactId}/workflow/{workflowId}": {
+    "app": "contacts",
+    "method": "DELETE",
+    "path": "/contacts/{contactId}/workflow/{workflowId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /contacts": {
+    "app": "contacts",
+    "method": "POST",
+    "path": "/contacts",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /contacts": {
+    "app": "contacts",
+    "method": "GET",
+    "path": "/contacts",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /conversations/search": {
+    "app": "conversations",
+    "method": "GET",
+    "path": "/conversations/search",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /conversations/{conversationId}": {
+    "app": "conversations",
+    "method": "GET",
+    "path": "/conversations/{conversationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "PUT /conversations/{conversationId}": {
+    "app": "conversations",
+    "method": "PUT",
+    "path": "/conversations/{conversationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "DELETE /conversations/{conversationId}": {
+    "app": "conversations",
+    "method": "DELETE",
+    "path": "/conversations/{conversationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /conversations/messages/email/{id}": {
+    "app": "conversations",
+    "method": "GET",
+    "path": "/conversations/messages/email/{id}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /conversations/messages/email/{id}"
+  },
+  "DELETE /conversations/messages/email/{emailMessageId}/schedule": {
+    "app": "conversations",
+    "method": "DELETE",
+    "path": "/conversations/messages/email/{emailMessageId}/schedule",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /conversations/messages/{id}": {
+    "app": "conversations",
+    "method": "GET",
+    "path": "/conversations/messages/{id}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /conversations/messages/{id}"
+  },
+  "GET /conversations/{conversationId}/messages": {
+    "app": "conversations",
+    "method": "GET",
+    "path": "/conversations/{conversationId}/messages",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /conversations/messages": {
+    "app": "conversations",
+    "method": "POST",
+    "path": "/conversations/messages",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /conversations/messages/inbound": {
+    "app": "conversations",
+    "method": "POST",
+    "path": "/conversations/messages/inbound",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /conversations/messages/outbound": {
+    "app": "conversations",
+    "method": "POST",
+    "path": "/conversations/messages/outbound",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "DELETE /conversations/messages/{messageId}/schedule": {
+    "app": "conversations",
+    "method": "DELETE",
+    "path": "/conversations/messages/{messageId}/schedule",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /conversations/messages/upload": {
+    "app": "conversations",
+    "method": "POST",
+    "path": "/conversations/messages/upload",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "PUT /conversations/messages/{messageId}/status": {
+    "app": "conversations",
+    "method": "PUT",
+    "path": "/conversations/messages/{messageId}/status",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "GET /conversations/messages/{messageId}/locations/{locationId}/recording": {
+    "app": "conversations",
+    "method": "GET",
+    "path": "/conversations/messages/{messageId}/locations/{locationId}/recording",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /conversations/messages/{messageId}/locations/{locationId}/recording"
+  },
+  "GET /conversations/locations/{locationId}/messages/{messageId}/transcription": {
+    "app": "conversations",
+    "method": "GET",
+    "path": "/conversations/locations/{locationId}/messages/{messageId}/transcription",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /conversations/locations/{locationId}/messages/{messageId}/transcription"
+  },
+  "GET /conversations/locations/{locationId}/messages/{messageId}/transcription/download": {
+    "app": "conversations",
+    "method": "GET",
+    "path": "/conversations/locations/{locationId}/messages/{messageId}/transcription/download",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /conversations/locations/{locationId}/messages/{messageId}/transcription/download"
+  },
+  "POST /conversations/providers/live-chat/typing": {
+    "app": "conversations",
+    "method": "POST",
+    "path": "/conversations/providers/live-chat/typing",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /conversations": {
+    "app": "conversations",
+    "method": "POST",
+    "path": "/conversations",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-04-15"
+  },
+  "POST /courses/courses-exporter/public/import": {
+    "app": "courses",
+    "method": "POST",
+    "path": "/courses/courses-exporter/public/import",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /custom-fields/{id}": {
+    "app": "custom-fields",
+    "method": "GET",
+    "path": "/custom-fields/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /custom-fields/{id}": {
+    "app": "custom-fields",
+    "method": "PUT",
+    "path": "/custom-fields/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /custom-fields/{id}": {
+    "app": "custom-fields",
+    "method": "DELETE",
+    "path": "/custom-fields/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /custom-fields/object-key/{objectKey}": {
+    "app": "custom-fields",
+    "method": "GET",
+    "path": "/custom-fields/object-key/{objectKey}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /custom-fields/object-key/{objectKey}"
+  },
+  "POST /custom-fields/folder": {
+    "app": "custom-fields",
+    "method": "POST",
+    "path": "/custom-fields/folder",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /custom-fields/folder/{id}": {
+    "app": "custom-fields",
+    "method": "PUT",
+    "path": "/custom-fields/folder/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /custom-fields/folder/{id}": {
+    "app": "custom-fields",
+    "method": "DELETE",
+    "path": "/custom-fields/folder/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /custom-fields/folder/{id}"
+  },
+  "POST /custom-fields": {
+    "app": "custom-fields",
+    "method": "POST",
+    "path": "/custom-fields",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /custom-menus/{customMenuId}": {
+    "app": "custom-menus",
+    "method": "GET",
+    "path": "/custom-menus/{customMenuId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /custom-menus/{customMenuId}": {
+    "app": "custom-menus",
+    "method": "DELETE",
+    "path": "/custom-menus/{customMenuId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /custom-menus/{customMenuId}": {
+    "app": "custom-menus",
+    "method": "PUT",
+    "path": "/custom-menus/{customMenuId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /custom-menus": {
+    "app": "custom-menus",
+    "method": "GET",
+    "path": "/custom-menus",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /custom-menus": {
+    "app": "custom-menus",
+    "method": "POST",
+    "path": "/custom-menus",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /email/verify": {
+    "app": "email-isv",
+    "method": "POST",
+    "path": "/email/verify",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /emails/schedule": {
+    "app": "emails",
+    "method": "GET",
+    "path": "/emails/schedule",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /emails/builder": {
+    "app": "emails",
+    "method": "POST",
+    "path": "/emails/builder",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /emails/builder": {
+    "app": "emails",
+    "method": "GET",
+    "path": "/emails/builder",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /emails/builder/{locationId}/{templateId}": {
+    "app": "emails",
+    "method": "DELETE",
+    "path": "/emails/builder/{locationId}/{templateId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /emails/builder/{locationId}/{templateId}"
+  },
+  "POST /emails/builder/data": {
+    "app": "emails",
+    "method": "POST",
+    "path": "/emails/builder/data",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /forms/submissions": {
+    "app": "forms",
+    "method": "GET",
+    "path": "/forms/submissions",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /forms/upload-custom-files": {
+    "app": "forms",
+    "method": "POST",
+    "path": "/forms/upload-custom-files",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /forms": {
+    "app": "forms",
+    "method": "GET",
+    "path": "/forms",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /funnels/lookup/redirect": {
+    "app": "funnels",
+    "method": "POST",
+    "path": "/funnels/lookup/redirect",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PATCH /funnels/lookup/redirect/{id}": {
+    "app": "funnels",
+    "method": "PATCH",
+    "path": "/funnels/lookup/redirect/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /funnels/lookup/redirect/{id}": {
+    "app": "funnels",
+    "method": "DELETE",
+    "path": "/funnels/lookup/redirect/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /funnels/lookup/redirect/list": {
+    "app": "funnels",
+    "method": "GET",
+    "path": "/funnels/lookup/redirect/list",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /funnels/funnel/list": {
+    "app": "funnels",
+    "method": "GET",
+    "path": "/funnels/funnel/list",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /funnels/page": {
+    "app": "funnels",
+    "method": "GET",
+    "path": "/funnels/page",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /funnels/page/count": {
+    "app": "funnels",
+    "method": "GET",
+    "path": "/funnels/page/count",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /invoices/template": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/template",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/template": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/template",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/template/{templateId}": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/template/{templateId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /invoices/template/{templateId}": {
+    "app": "invoices",
+    "method": "PUT",
+    "path": "/invoices/template/{templateId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /invoices/template/{templateId}": {
+    "app": "invoices",
+    "method": "DELETE",
+    "path": "/invoices/template/{templateId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PATCH /invoices/template/{templateId}/late-fees-configuration": {
+    "app": "invoices",
+    "method": "PATCH",
+    "path": "/invoices/template/{templateId}/late-fees-configuration",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PATCH /invoices/template/{templateId}/payment-methods-configuration": {
+    "app": "invoices",
+    "method": "PATCH",
+    "path": "/invoices/template/{templateId}/payment-methods-configuration",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/schedule": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/schedule",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/schedule": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/schedule",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/schedule/{scheduleId}": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/schedule/{scheduleId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /invoices/schedule/{scheduleId}": {
+    "app": "invoices",
+    "method": "PUT",
+    "path": "/invoices/schedule/{scheduleId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /invoices/schedule/{scheduleId}": {
+    "app": "invoices",
+    "method": "DELETE",
+    "path": "/invoices/schedule/{scheduleId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/schedule/{scheduleId}/updateAndSchedule": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/schedule/{scheduleId}/updateAndSchedule",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/schedule/{scheduleId}/schedule": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/schedule/{scheduleId}/schedule",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/schedule/{scheduleId}/auto-payment": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/schedule/{scheduleId}/auto-payment",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/schedule/{scheduleId}/cancel": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/schedule/{scheduleId}/cancel",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/text2pay": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/text2pay",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/generate-invoice-number": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/generate-invoice-number",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/{invoiceId}": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/{invoiceId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /invoices/{invoiceId}": {
+    "app": "invoices",
+    "method": "PUT",
+    "path": "/invoices/{invoiceId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /invoices/{invoiceId}": {
+    "app": "invoices",
+    "method": "DELETE",
+    "path": "/invoices/{invoiceId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PATCH /invoices/{invoiceId}/late-fees-configuration": {
+    "app": "invoices",
+    "method": "PATCH",
+    "path": "/invoices/{invoiceId}/late-fees-configuration",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/{invoiceId}/void": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/{invoiceId}/void",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/{invoiceId}/send": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/{invoiceId}/send",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/{invoiceId}/record-payment": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/{invoiceId}/record-payment",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PATCH /invoices/stats/last-visited-at": {
+    "app": "invoices",
+    "method": "PATCH",
+    "path": "/invoices/stats/last-visited-at",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/estimate": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/estimate",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /invoices/estimate/{estimateId}": {
+    "app": "invoices",
+    "method": "PUT",
+    "path": "/invoices/estimate/{estimateId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /invoices/estimate/{estimateId}": {
+    "app": "invoices",
+    "method": "DELETE",
+    "path": "/invoices/estimate/{estimateId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/estimate/number/generate": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/estimate/number/generate",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/estimate/{estimateId}/send": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/estimate/{estimateId}/send",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/estimate/{estimateId}/invoice": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/estimate/{estimateId}/invoice",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/estimate/list": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/estimate/list",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PATCH /invoices/estimate/stats/last-visited-at": {
+    "app": "invoices",
+    "method": "PATCH",
+    "path": "/invoices/estimate/stats/last-visited-at",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/estimate/template": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/estimate/template",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices/estimate/template": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices/estimate/template",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /invoices/estimate/template/{templateId}": {
+    "app": "invoices",
+    "method": "PUT",
+    "path": "/invoices/estimate/template/{templateId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /invoices/estimate/template/{templateId}": {
+    "app": "invoices",
+    "method": "DELETE",
+    "path": "/invoices/estimate/template/{templateId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices/estimate/template/preview": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices/estimate/template/preview",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /invoices": {
+    "app": "invoices",
+    "method": "POST",
+    "path": "/invoices",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /invoices": {
+    "app": "invoices",
+    "method": "GET",
+    "path": "/invoices",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /links/id/{linkId}": {
+    "app": "links",
+    "method": "GET",
+    "path": "/links/id/{linkId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /links/{linkId}": {
+    "app": "links",
+    "method": "PUT",
+    "path": "/links/{linkId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /links/{linkId}": {
+    "app": "links",
+    "method": "DELETE",
+    "path": "/links/{linkId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /links/search": {
+    "app": "links",
+    "method": "GET",
+    "path": "/links/search",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /links": {
+    "app": "links",
+    "method": "GET",
+    "path": "/links",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /links": {
+    "app": "links",
+    "method": "POST",
+    "path": "/links",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /locations/search": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/search",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /locations/{locationId}": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /locations/{locationId}": {
+    "app": "locations",
+    "method": "PUT",
+    "path": "/locations/{locationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /locations/{locationId}": {
+    "app": "locations",
+    "method": "DELETE",
+    "path": "/locations/{locationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /locations/{locationId}/tags": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/tags",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /locations/{locationId}/tags": {
+    "app": "locations",
+    "method": "POST",
+    "path": "/locations/{locationId}/tags",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /locations/{locationId}/tags/{tagId}": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/tags/{tagId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /locations/{locationId}/tags/{tagId}": {
+    "app": "locations",
+    "method": "PUT",
+    "path": "/locations/{locationId}/tags/{tagId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /locations/{locationId}/tags/{tagId}": {
+    "app": "locations",
+    "method": "DELETE",
+    "path": "/locations/{locationId}/tags/{tagId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /locations/{locationId}/tasks/search": {
+    "app": "locations",
+    "method": "POST",
+    "path": "/locations/{locationId}/tasks/search",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /locations/{locationId}/recurring-tasks/{id}": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/recurring-tasks/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /locations/{locationId}/recurring-tasks/{id}": {
+    "app": "locations",
+    "method": "PUT",
+    "path": "/locations/{locationId}/recurring-tasks/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /locations/{locationId}/recurring-tasks/{id}": {
+    "app": "locations",
+    "method": "DELETE",
+    "path": "/locations/{locationId}/recurring-tasks/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /locations/{locationId}/recurring-tasks": {
+    "app": "locations",
+    "method": "POST",
+    "path": "/locations/{locationId}/recurring-tasks",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /locations/{locationId}/customFields": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/customFields",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /locations/{locationId}/customFields": {
+    "app": "locations",
+    "method": "POST",
+    "path": "/locations/{locationId}/customFields",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /locations/{locationId}/customFields/{id}": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/customFields/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /locations/{locationId}/customFields/{id}"
+  },
+  "PUT /locations/{locationId}/customFields/{id}": {
+    "app": "locations",
+    "method": "PUT",
+    "path": "/locations/{locationId}/customFields/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /locations/{locationId}/customFields/{id}"
+  },
+  "DELETE /locations/{locationId}/customFields/{id}": {
+    "app": "locations",
+    "method": "DELETE",
+    "path": "/locations/{locationId}/customFields/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /locations/{locationId}/customFields/{id}"
+  },
+  "POST /locations/{locationId}/customFields/upload": {
+    "app": "locations",
+    "method": "POST",
+    "path": "/locations/{locationId}/customFields/upload",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /locations/{locationId}/customValues": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/customValues",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /locations/{locationId}/customValues": {
+    "app": "locations",
+    "method": "POST",
+    "path": "/locations/{locationId}/customValues",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /locations/{locationId}/customValues/{id}": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/customValues/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /locations/{locationId}/customValues/{id}"
+  },
+  "PUT /locations/{locationId}/customValues/{id}": {
+    "app": "locations",
+    "method": "PUT",
+    "path": "/locations/{locationId}/customValues/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /locations/{locationId}/customValues/{id}"
+  },
+  "DELETE /locations/{locationId}/customValues/{id}": {
+    "app": "locations",
+    "method": "DELETE",
+    "path": "/locations/{locationId}/customValues/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /locations/{locationId}/customValues/{id}"
+  },
+  "GET /locations/{locationId}/timezones": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/timezones",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /locations/{locationId}/templates": {
+    "app": "locations",
+    "method": "GET",
+    "path": "/locations/{locationId}/templates",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /locations/{locationId}/templates/{id}": {
+    "app": "locations",
+    "method": "DELETE",
+    "path": "/locations/{locationId}/templates/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /locations/{locationId}/templates/{id}"
+  },
+  "POST /locations": {
+    "app": "locations",
+    "method": "POST",
+    "path": "/locations",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /marketplace/billing/charges": {
+    "app": "marketplace",
+    "method": "POST",
+    "path": "/marketplace/billing/charges",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /marketplace/billing/charges": {
+    "app": "marketplace",
+    "method": "GET",
+    "path": "/marketplace/billing/charges",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /marketplace/billing/charges/{chargeId}": {
+    "app": "marketplace",
+    "method": "DELETE",
+    "path": "/marketplace/billing/charges/{chargeId}",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /marketplace/billing/charges/{chargeId}": {
+    "app": "marketplace",
+    "method": "GET",
+    "path": "/marketplace/billing/charges/{chargeId}",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /marketplace/billing/charges/has-funds": {
+    "app": "marketplace",
+    "method": "GET",
+    "path": "/marketplace/billing/charges/has-funds",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /marketplace/app/{appId}/installations": {
+    "app": "marketplace",
+    "method": "DELETE",
+    "path": "/marketplace/app/{appId}/installations",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /marketplace/app/{appId}/installations": {
+    "app": "marketplace",
+    "method": "GET",
+    "path": "/marketplace/app/{appId}/installations",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /medias/files": {
+    "app": "medias",
+    "method": "GET",
+    "path": "/medias/files",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /medias/upload-file": {
+    "app": "medias",
+    "method": "POST",
+    "path": "/medias/upload-file",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /medias/{id}": {
+    "app": "medias",
+    "method": "DELETE",
+    "path": "/medias/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /medias/{id}"
+  },
+  "POST /medias/{id}": {
+    "app": "medias",
+    "method": "POST",
+    "path": "/medias/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /medias/folder": {
+    "app": "medias",
+    "method": "POST",
+    "path": "/medias/folder",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /medias/update-files": {
+    "app": "medias",
+    "method": "PUT",
+    "path": "/medias/update-files",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /medias/delete-files": {
+    "app": "medias",
+    "method": "PUT",
+    "path": "/medias/delete-files",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /oauth/token": {
+    "app": "oauth",
+    "method": "POST",
+    "path": "/oauth/token",
+    "versions": [],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /oauth/locationToken": {
+    "app": "oauth",
+    "method": "POST",
+    "path": "/oauth/locationToken",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /oauth/installedLocations": {
+    "app": "oauth",
+    "method": "GET",
+    "path": "/oauth/installedLocations",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /objects/{key}": {
+    "app": "objects",
+    "method": "GET",
+    "path": "/objects/{key}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /objects/{key}"
+  },
+  "PUT /objects/{key}": {
+    "app": "objects",
+    "method": "PUT",
+    "path": "/objects/{key}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /objects/{schemaKey}/records/{id}": {
+    "app": "objects",
+    "method": "GET",
+    "path": "/objects/{schemaKey}/records/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /objects/{schemaKey}/records/{id}"
+  },
+  "PUT /objects/{schemaKey}/records/{id}": {
+    "app": "objects",
+    "method": "PUT",
+    "path": "/objects/{schemaKey}/records/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /objects/{schemaKey}/records/{id}"
+  },
+  "DELETE /objects/{schemaKey}/records/{id}": {
+    "app": "objects",
+    "method": "DELETE",
+    "path": "/objects/{schemaKey}/records/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /objects/{schemaKey}/records/{id}"
+  },
+  "POST /objects/{schemaKey}/records": {
+    "app": "objects",
+    "method": "POST",
+    "path": "/objects/{schemaKey}/records",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /objects/{schemaKey}/records/search": {
+    "app": "objects",
+    "method": "POST",
+    "path": "/objects/{schemaKey}/records/search",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /objects": {
+    "app": "objects",
+    "method": "GET",
+    "path": "/objects",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /objects": {
+    "app": "objects",
+    "method": "POST",
+    "path": "/objects",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /opportunities/search": {
+    "app": "opportunities",
+    "method": "GET",
+    "path": "/opportunities/search",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /opportunities/pipelines": {
+    "app": "opportunities",
+    "method": "GET",
+    "path": "/opportunities/pipelines",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /opportunities/{id}": {
+    "app": "opportunities",
+    "method": "GET",
+    "path": "/opportunities/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /opportunities/{id}"
+  },
+  "DELETE /opportunities/{id}": {
+    "app": "opportunities",
+    "method": "DELETE",
+    "path": "/opportunities/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /opportunities/{id}"
+  },
+  "PUT /opportunities/{id}": {
+    "app": "opportunities",
+    "method": "PUT",
+    "path": "/opportunities/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /opportunities/{id}"
+  },
+  "PUT /opportunities/{id}/status": {
+    "app": "opportunities",
+    "method": "PUT",
+    "path": "/opportunities/{id}/status",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /opportunities/{id}/status"
+  },
+  "POST /opportunities/upsert": {
+    "app": "opportunities",
+    "method": "POST",
+    "path": "/opportunities/upsert",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /opportunities/{id}/followers": {
+    "app": "opportunities",
+    "method": "POST",
+    "path": "/opportunities/{id}/followers",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /opportunities/{id}/followers"
+  },
+  "DELETE /opportunities/{id}/followers": {
+    "app": "opportunities",
+    "method": "DELETE",
+    "path": "/opportunities/{id}/followers",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /opportunities/{id}/followers"
+  },
+  "POST /opportunities": {
+    "app": "opportunities",
+    "method": "POST",
+    "path": "/opportunities",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /payments/integrations/provider/whitelabel": {
+    "app": "payments",
+    "method": "POST",
+    "path": "/payments/integrations/provider/whitelabel",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/integrations/provider/whitelabel": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/integrations/provider/whitelabel",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/orders": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/orders",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/orders/{orderId}": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/orders/{orderId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /payments/orders/{orderId}/fulfillments": {
+    "app": "payments",
+    "method": "POST",
+    "path": "/payments/orders/{orderId}/fulfillments",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/orders/{orderId}/fulfillments": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/orders/{orderId}/fulfillments",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/transactions": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/transactions",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/transactions/{transactionId}": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/transactions/{transactionId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/subscriptions": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/subscriptions",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/subscriptions/{subscriptionId}": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/subscriptions/{subscriptionId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/coupon/list": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/coupon/list",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /payments/coupon": {
+    "app": "payments",
+    "method": "POST",
+    "path": "/payments/coupon",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /payments/coupon": {
+    "app": "payments",
+    "method": "PUT",
+    "path": "/payments/coupon",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /payments/coupon": {
+    "app": "payments",
+    "method": "DELETE",
+    "path": "/payments/coupon",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/coupon": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/coupon",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /payments/custom-provider/provider": {
+    "app": "payments",
+    "method": "POST",
+    "path": "/payments/custom-provider/provider",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /payments/custom-provider/provider": {
+    "app": "payments",
+    "method": "DELETE",
+    "path": "/payments/custom-provider/provider",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /payments/custom-provider/connect": {
+    "app": "payments",
+    "method": "GET",
+    "path": "/payments/custom-provider/connect",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /payments/custom-provider/connect": {
+    "app": "payments",
+    "method": "POST",
+    "path": "/payments/custom-provider/connect",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /payments/custom-provider/disconnect": {
+    "app": "payments",
+    "method": "POST",
+    "path": "/payments/custom-provider/disconnect",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /phone-system/number-pools": {
+    "app": "phone-system",
+    "method": "GET",
+    "path": "/phone-system/number-pools",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /phone-system/numbers/location/{locationId}": {
+    "app": "phone-system",
+    "method": "GET",
+    "path": "/phone-system/numbers/location/{locationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /products/bulk-update": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products/bulk-update",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /products/bulk-update/edit": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products/bulk-update/edit",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /products/{productId}/price": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products/{productId}/price",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products/{productId}/price": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/{productId}/price",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products/inventory": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/inventory",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /products/inventory": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products/inventory",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products/{productId}/price/{priceId}": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/{productId}/price/{priceId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /products/{productId}/price/{priceId}": {
+    "app": "products",
+    "method": "PUT",
+    "path": "/products/{productId}/price/{priceId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /products/{productId}/price/{priceId}": {
+    "app": "products",
+    "method": "DELETE",
+    "path": "/products/{productId}/price/{priceId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products/store/{storeId}/stats": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/store/{storeId}/stats",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /products/store/{storeId}": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products/store/{storeId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /products/store/{storeId}/priority": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products/store/{storeId}/priority",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /products/collections": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/collections",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /products/collections": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products/collections",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products/collections/{collectionId}": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/collections/{collectionId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /products/collections/{collectionId}": {
+    "app": "products",
+    "method": "PUT",
+    "path": "/products/collections/{collectionId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /products/collections/{collectionId}": {
+    "app": "products",
+    "method": "DELETE",
+    "path": "/products/collections/{collectionId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products/reviews": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/reviews",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products/reviews/count": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/reviews/count",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /products/reviews/{reviewId}": {
+    "app": "products",
+    "method": "PUT",
+    "path": "/products/reviews/{reviewId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /products/reviews/{reviewId}": {
+    "app": "products",
+    "method": "DELETE",
+    "path": "/products/reviews/{reviewId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /products/reviews/bulk-update": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products/reviews/bulk-update",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products/{productId}": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products/{productId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /products/{productId}": {
+    "app": "products",
+    "method": "DELETE",
+    "path": "/products/{productId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "PUT /products/{productId}": {
+    "app": "products",
+    "method": "PUT",
+    "path": "/products/{productId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /products": {
+    "app": "products",
+    "method": "POST",
+    "path": "/products",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /products": {
+    "app": "products",
+    "method": "GET",
+    "path": "/products",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /proposals/document": {
+    "app": "proposals",
+    "method": "GET",
+    "path": "/proposals/document",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /proposals/document/send": {
+    "app": "proposals",
+    "method": "POST",
+    "path": "/proposals/document/send",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /proposals/templates": {
+    "app": "proposals",
+    "method": "GET",
+    "path": "/proposals/templates",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /proposals/templates/send": {
+    "app": "proposals",
+    "method": "POST",
+    "path": "/proposals/templates/send",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas-api/public-api/locations": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas-api/public-api/locations",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /saas-api/public-api/update-saas-subscription/{locationId}": {
+    "app": "saas-api",
+    "method": "PUT",
+    "path": "/saas-api/public-api/update-saas-subscription/{locationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas-api/public-api/bulk-disable-saas/{companyId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas-api/public-api/bulk-disable-saas/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas-api/public-api/enable-saas/{locationId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas-api/public-api/enable-saas/{locationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas-api/public-api/pause/{locationId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas-api/public-api/pause/{locationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas-api/public-api/update-rebilling/{companyId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas-api/public-api/update-rebilling/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas-api/public-api/agency-plans/{companyId}": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas-api/public-api/agency-plans/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas-api/public-api/get-saas-subscription/{locationId}": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas-api/public-api/get-saas-subscription/{locationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas-api/public-api/bulk-enable-saas/{companyId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas-api/public-api/bulk-enable-saas/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas-api/public-api/saas-locations/{companyId}": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas-api/public-api/saas-locations/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas-api/public-api/saas-plan/{planId}": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas-api/public-api/saas-plan/{planId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas/locations": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas/locations",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /saas/update-saas-subscription/{locationId}": {
+    "app": "saas-api",
+    "method": "PUT",
+    "path": "/saas/update-saas-subscription/{locationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas/bulk-disable-saas/{companyId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas/bulk-disable-saas/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas/enable-saas/{locationId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas/enable-saas/{locationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas/pause/{locationId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas/pause/{locationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas/update-rebilling/{companyId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas/update-rebilling/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas/agency-plans/{companyId}": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas/agency-plans/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas/get-saas-subscription/{locationId}": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas/get-saas-subscription/{locationId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /saas/bulk-enable-saas/{companyId}": {
+    "app": "saas-api",
+    "method": "POST",
+    "path": "/saas/bulk-enable-saas/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas/saas-locations/{companyId}": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas/saas-locations/{companyId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /saas/saas-plan/{planId}": {
+    "app": "saas-api",
+    "method": "GET",
+    "path": "/saas/saas-plan/{planId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /snapshots": {
+    "app": "snapshots",
+    "method": "GET",
+    "path": "/snapshots",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /snapshots/share/link": {
+    "app": "snapshots",
+    "method": "POST",
+    "path": "/snapshots/share/link",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /snapshots/snapshot-status/{snapshotId}": {
+    "app": "snapshots",
+    "method": "GET",
+    "path": "/snapshots/snapshot-status/{snapshotId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /snapshots/snapshot-status/{snapshotId}/location/{locationId}": {
+    "app": "snapshots",
+    "method": "GET",
+    "path": "/snapshots/snapshot-status/{snapshotId}/location/{locationId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/google/start": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/google/start",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/{locationId}/google/locations/{accountId}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/{locationId}/google/locations/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/oauth/{locationId}/google/locations/{accountId}": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/oauth/{locationId}/google/locations/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/{locationId}/posts/list": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/{locationId}/posts/list",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /social-media-posting/{locationId}/posts": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/{locationId}/posts",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /social-media-posting/{locationId}/posts/{id}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/{locationId}/posts/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /social-media-posting/{locationId}/posts/{id}"
+  },
+  "PUT /social-media-posting/{locationId}/posts/{id}": {
+    "app": "social-media-posting",
+    "method": "PUT",
+    "path": "/social-media-posting/{locationId}/posts/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /social-media-posting/{locationId}/posts/{id}"
+  },
+  "DELETE /social-media-posting/{locationId}/posts/{id}": {
+    "app": "social-media-posting",
+    "method": "DELETE",
+    "path": "/social-media-posting/{locationId}/posts/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /social-media-posting/{locationId}/posts/{id}"
+  },
+  "POST /social-media-posting/{locationId}/posts/bulk-delete": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/{locationId}/posts/bulk-delete",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /social-media-posting/{locationId}/accounts": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/{locationId}/accounts",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "DELETE /social-media-posting/{locationId}/accounts/{id}": {
+    "app": "social-media-posting",
+    "method": "DELETE",
+    "path": "/social-media-posting/{locationId}/accounts/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /social-media-posting/{locationId}/accounts/{id}"
+  },
+  "GET /social-media-posting/oauth/facebook/start": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/facebook/start",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/{locationId}/facebook/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/{locationId}/facebook/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/oauth/{locationId}/facebook/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/oauth/{locationId}/facebook/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/instagram/start": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/instagram/start",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/{locationId}/instagram/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/{locationId}/instagram/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/oauth/{locationId}/instagram/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/oauth/{locationId}/instagram/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/linkedin/start": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/linkedin/start",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/{locationId}/linkedin/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/{locationId}/linkedin/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/oauth/{locationId}/linkedin/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/oauth/{locationId}/linkedin/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/twitter/start": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/twitter/start",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/{locationId}/twitter/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/{locationId}/twitter/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/oauth/{locationId}/twitter/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/oauth/{locationId}/twitter/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/{locationId}/csv": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/{locationId}/csv",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /social-media-posting/{locationId}/csv": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/{locationId}/csv",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "POST /social-media-posting/{locationId}/set-accounts": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/{locationId}/set-accounts",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /social-media-posting/{locationId}/csv/{id}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/{locationId}/csv/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /social-media-posting/{locationId}/csv/{id}"
+  },
+  "PATCH /social-media-posting/{locationId}/csv/{id}": {
+    "app": "social-media-posting",
+    "method": "PATCH",
+    "path": "/social-media-posting/{locationId}/csv/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /social-media-posting/{locationId}/csv/{id}"
+  },
+  "DELETE /social-media-posting/{locationId}/csv/{id}": {
+    "app": "social-media-posting",
+    "method": "DELETE",
+    "path": "/social-media-posting/{locationId}/csv/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Verified correct - client implementation matches vendor spec: /social-media-posting/{locationId}/csv/{id}"
+  },
+  "DELETE /social-media-posting/{locationId}/csv/{csvId}/post/{postId}": {
+    "app": "social-media-posting",
+    "method": "DELETE",
+    "path": "/social-media-posting/{locationId}/csv/{csvId}/post/{postId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /social-media-posting/oauth/tiktok/start": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/tiktok/start",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/{locationId}/tiktok/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/{locationId}/tiktok/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/oauth/{locationId}/tiktok/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/oauth/{locationId}/tiktok/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/tiktok-business/start": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/tiktok-business/start",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/oauth/{locationId}/tiktok-business/accounts/{accountId}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/oauth/{locationId}/tiktok-business/accounts/{accountId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/{locationId}/categories": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/{locationId}/categories",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/{locationId}/categories/{id}": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/{locationId}/categories/{id}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /social-media-posting/{locationId}/tags": {
+    "app": "social-media-posting",
+    "method": "GET",
+    "path": "/social-media-posting/{locationId}/tags",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/{locationId}/tags/details": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/{locationId}/tags/details",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /social-media-posting/statistics": {
+    "app": "social-media-posting",
+    "method": "POST",
+    "path": "/social-media-posting/statistics",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /store/shipping-zone": {
+    "app": "store",
+    "method": "POST",
+    "path": "/store/shipping-zone",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /store/shipping-zone": {
+    "app": "store",
+    "method": "GET",
+    "path": "/store/shipping-zone",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /store/shipping-zone/{shippingZoneId}": {
+    "app": "store",
+    "method": "GET",
+    "path": "/store/shipping-zone/{shippingZoneId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "PUT /store/shipping-zone/{shippingZoneId}": {
+    "app": "store",
+    "method": "PUT",
+    "path": "/store/shipping-zone/{shippingZoneId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "DELETE /store/shipping-zone/{shippingZoneId}": {
+    "app": "store",
+    "method": "DELETE",
+    "path": "/store/shipping-zone/{shippingZoneId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "POST /store/shipping-zone/shipping-rates": {
+    "app": "store",
+    "method": "POST",
+    "path": "/store/shipping-zone/shipping-rates",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "POST /store/shipping-zone/{shippingZoneId}/shipping-rate": {
+    "app": "store",
+    "method": "POST",
+    "path": "/store/shipping-zone/{shippingZoneId}/shipping-rate",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /store/shipping-zone/{shippingZoneId}/shipping-rate": {
+    "app": "store",
+    "method": "GET",
+    "path": "/store/shipping-zone/{shippingZoneId}/shipping-rate",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /store/shipping-zone/{shippingZoneId}/shipping-rate/{shippingRateId}": {
+    "app": "store",
+    "method": "GET",
+    "path": "/store/shipping-zone/{shippingZoneId}/shipping-rate/{shippingRateId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "PUT /store/shipping-zone/{shippingZoneId}/shipping-rate/{shippingRateId}": {
+    "app": "store",
+    "method": "PUT",
+    "path": "/store/shipping-zone/{shippingZoneId}/shipping-rate/{shippingRateId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "DELETE /store/shipping-zone/{shippingZoneId}/shipping-rate/{shippingRateId}": {
+    "app": "store",
+    "method": "DELETE",
+    "path": "/store/shipping-zone/{shippingZoneId}/shipping-rate/{shippingRateId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "POST /store/shipping-carrier": {
+    "app": "store",
+    "method": "POST",
+    "path": "/store/shipping-carrier",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /store/shipping-carrier": {
+    "app": "store",
+    "method": "GET",
+    "path": "/store/shipping-carrier",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /store/shipping-carrier/{shippingCarrierId}": {
+    "app": "store",
+    "method": "GET",
+    "path": "/store/shipping-carrier/{shippingCarrierId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "PUT /store/shipping-carrier/{shippingCarrierId}": {
+    "app": "store",
+    "method": "PUT",
+    "path": "/store/shipping-carrier/{shippingCarrierId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "DELETE /store/shipping-carrier/{shippingCarrierId}": {
+    "app": "store",
+    "method": "DELETE",
+    "path": "/store/shipping-carrier/{shippingCarrierId}",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "POST /store/store-setting": {
+    "app": "store",
+    "method": "POST",
+    "path": "/store/store-setting",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /store/store-setting": {
+    "app": "store",
+    "method": "GET",
+    "path": "/store/store-setting",
+    "versions": [],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers"
+  },
+  "GET /surveys/submissions": {
+    "app": "surveys",
+    "method": "GET",
+    "path": "/surveys/submissions",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /surveys": {
+    "app": "surveys",
+    "method": "GET",
+    "path": "/surveys",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  },
+  "GET /users/search": {
+    "app": "users",
+    "method": "GET",
+    "path": "/users/search",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /users/search/filter-by-email": {
+    "app": "users",
+    "method": "POST",
+    "path": "/users/search/filter-by-email",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /users/{userId}": {
+    "app": "users",
+    "method": "GET",
+    "path": "/users/{userId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /users/{userId}": {
+    "app": "users",
+    "method": "PUT",
+    "path": "/users/{userId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /users/{userId}": {
+    "app": "users",
+    "method": "DELETE",
+    "path": "/users/{userId}",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /users": {
+    "app": "users",
+    "method": "GET",
+    "path": "/users",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /users": {
+    "app": "users",
+    "method": "POST",
+    "path": "/users",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /voice-ai/agents": {
+    "app": "voice-ai",
+    "method": "POST",
+    "path": "/voice-ai/agents",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /voice-ai/agents": {
+    "app": "voice-ai",
+    "method": "GET",
+    "path": "/voice-ai/agents",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PATCH /voice-ai/agents/{agentId}": {
+    "app": "voice-ai",
+    "method": "PATCH",
+    "path": "/voice-ai/agents/{agentId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /voice-ai/agents/{agentId}": {
+    "app": "voice-ai",
+    "method": "GET",
+    "path": "/voice-ai/agents/{agentId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /voice-ai/agents/{agentId}": {
+    "app": "voice-ai",
+    "method": "DELETE",
+    "path": "/voice-ai/agents/{agentId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /voice-ai/dashboard/call-logs": {
+    "app": "voice-ai",
+    "method": "GET",
+    "path": "/voice-ai/dashboard/call-logs",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /voice-ai/dashboard/call-logs/{callId}": {
+    "app": "voice-ai",
+    "method": "GET",
+    "path": "/voice-ai/dashboard/call-logs/{callId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "POST /voice-ai/actions": {
+    "app": "voice-ai",
+    "method": "POST",
+    "path": "/voice-ai/actions",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "PUT /voice-ai/actions/{actionId}": {
+    "app": "voice-ai",
+    "method": "PUT",
+    "path": "/voice-ai/actions/{actionId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /voice-ai/actions/{actionId}": {
+    "app": "voice-ai",
+    "method": "GET",
+    "path": "/voice-ai/actions/{actionId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "DELETE /voice-ai/actions/{actionId}": {
+    "app": "voice-ai",
+    "method": "DELETE",
+    "path": "/voice-ai/actions/{actionId}",
+    "versions": [
+      "2021-04-15"
+    ],
+    "status": "needs-fix",
+    "notes": "Missing in client (implement endpoint)"
+  },
+  "GET /workflows": {
+    "app": "workflows",
+    "method": "GET",
+    "path": "/workflows",
+    "versions": [
+      "2021-07-28"
+    ],
+    "status": "verified",
+    "notes": "Exists in client; verify semantics/headers — Version hint: 2021-07-28"
+  }
+}

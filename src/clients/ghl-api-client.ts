@@ -113,6 +113,9 @@ import {
   GHLUpsertContactResponse,
   GHLBulkTagsResponse,
   GHLBulkBusinessResponse,
+  GHLBulkTagsUpdateRequest,
+  GHLBulkBusinessUpdateRequest,
+  GHLGetContactsResponse,
   GHLFollowersResponse,
   GHLCampaign,
   GHLWorkflow,
@@ -391,15 +394,40 @@ export class GHLApiClient {
   private axiosInstance: AxiosInstance;
   private config: GHLConfig;
 
-  constructor(config: GHLConfig) {
-    this.config = config;
+  constructor(config?: GHLConfig) {
+    // Use provided config or create from environment variables
+    if (config) {
+      this.config = config;
+    } else {
+      const apiKey = process.env.GHL_API_KEY;
+      const baseUrl = process.env.GHL_BASE_URL;
+      const locationId = process.env.GHL_LOCATION_ID;
+      const version = process.env.GHL_VERSION || '2021-07-28';
+
+      if (!apiKey) {
+        throw new Error('GHL_API_KEY environment variable is required');
+      }
+      if (!baseUrl) {
+        throw new Error('GHL_BASE_URL environment variable is required');
+      }
+      if (!locationId) {
+        throw new Error('GHL_LOCATION_ID environment variable is required');
+      }
+
+      this.config = {
+        accessToken: apiKey,
+        baseUrl: baseUrl,
+        locationId: locationId,
+        version: version
+      };
+    }
     
     // Create axios instance with base configuration
     this.axiosInstance = axios.create({
-      baseURL: config.baseUrl,
+      baseURL: this.config.baseUrl,
       headers: {
-        'Authorization': `Bearer ${config.accessToken}`,
-        'Version': config.version,
+        'Authorization': `Bearer ${this.config.accessToken}`,
+        'Version': this.config.version,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
@@ -430,7 +458,7 @@ export class GHLApiClient {
           message: error.response?.data?.message,
           url: error.config?.url
         });
-        return Promise.reject(this.handleApiError(error));
+        return this.handleApiError(error);
       }
     );
   }
@@ -438,12 +466,20 @@ export class GHLApiClient {
   /**
    * Handle API errors and convert to standardized format
    */
-  private handleApiError(error: AxiosError<GHLErrorResponse>): Error {
+  private handleApiError(error: AxiosError<GHLErrorResponse>): GHLApiResponse<never> {
     const status = error.response?.status || 500;
     const message = error.response?.data?.message || error.message || 'Unknown error';
     const errorMessage = Array.isArray(message) ? message.join(', ') : message;
     
-    return new Error(`GHL API Error (${status}): ${errorMessage}`);
+    return {
+      success: false,
+      data: null as never,
+      error: {
+        message: `GHL API Error (${status}): ${errorMessage}`,
+        statusCode: status,
+        details: error.response?.data
+      }
+    };
   }
 
   /**
@@ -463,6 +499,18 @@ export class GHLApiClient {
     return {
       'Authorization': `Bearer ${this.config.accessToken}`,
       'Version': '2021-04-15', // Conversations API uses different version
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+  }
+
+  /**
+   * Create headers for a specific API Version
+   */
+  private getHeadersForVersion(version: string) {
+    return {
+      'Authorization': `Bearer ${this.config.accessToken}`,
+      'Version': version,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
@@ -491,7 +539,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.contact);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -507,7 +555,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.contact);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -524,7 +572,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.contact);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -540,7 +588,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -618,15 +666,7 @@ export class GHLApiClient {
         message: axiosError.message
       }, null, 2)}\n`);
       
-      const handledError = this.handleApiError(axiosError);
-      return {
-        success: false,
-        error: {
-          message: handledError.message,
-          statusCode: axiosError.response?.status || 500,
-          details: axiosError.response?.data
-        }
-      };
+      return this.handleApiError(axiosError);
     }
   }
 
@@ -650,7 +690,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.contact || null);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -669,7 +709,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -688,7 +728,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -718,7 +758,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -735,7 +775,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -759,7 +799,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.conversation);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -783,7 +823,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.conversation);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -800,7 +840,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -832,7 +872,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -840,16 +880,16 @@ export class GHLApiClient {
    * Get message by ID
    * GET /conversations/messages/{id}
    */
-  async getMessage(messageId: string): Promise<GHLApiResponse<GHLMessage>> {
+  async getMessage(id: string): Promise<GHLApiResponse<GHLMessage>> {
     try {
       const response: AxiosResponse<GHLMessage> = await this.axiosInstance.get(
-        `/conversations/messages/${messageId}`,
+        `/conversations/messages/${id}`,
         { headers: this.getConversationHeaders() }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -867,7 +907,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -886,7 +926,7 @@ export class GHLApiClient {
 
       return await this.sendMessage(messageData);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -919,7 +959,7 @@ export class GHLApiClient {
 
       return await this.sendMessage(messageData);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -948,7 +988,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -975,7 +1015,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -998,7 +1038,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1021,7 +1061,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1045,7 +1085,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1069,7 +1109,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1093,7 +1133,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1113,7 +1153,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.tasks);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1130,7 +1170,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.task);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1150,7 +1190,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.notes);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1167,7 +1207,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.note);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1187,7 +1227,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.task);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1204,7 +1244,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.task);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1220,7 +1260,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1237,7 +1277,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.task);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1245,15 +1285,15 @@ export class GHLApiClient {
    * Get a specific note for a contact
    * GET /contacts/{contactId}/notes/{noteId}
    */
-  async getContactNote(contactId: string, noteId: string): Promise<GHLApiResponse<GHLNote>> {
+  async getContactNote(contactId: string, id: string): Promise<GHLApiResponse<GHLNote>> {
     try {
       const response: AxiosResponse<{ note: GHLNote }> = await this.axiosInstance.get(
-        `/contacts/${contactId}/notes/${noteId}`
+        `/contacts/${contactId}/notes/${id}`
       );
 
       return this.wrapResponse(response.data.note);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1261,16 +1301,16 @@ export class GHLApiClient {
    * Update a note for a contact
    * PUT /contacts/{contactId}/notes/{noteId}
    */
-  async updateContactNote(contactId: string, noteId: string, updates: Partial<GHLNote>): Promise<GHLApiResponse<GHLNote>> {
+  async updateContactNote(contactId: string, id: string, updates: Partial<GHLNote>): Promise<GHLApiResponse<GHLNote>> {
     try {
       const response: AxiosResponse<{ note: GHLNote }> = await this.axiosInstance.put(
-        `/contacts/${contactId}/notes/${noteId}`,
+        `/contacts/${contactId}/notes/${id}`,
         updates
       );
 
       return this.wrapResponse(response.data.note);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1278,15 +1318,15 @@ export class GHLApiClient {
    * Delete a note for a contact
    * DELETE /contacts/{contactId}/notes/{noteId}
    */
-  async deleteContactNote(contactId: string, noteId: string): Promise<GHLApiResponse<{ succeded: boolean }>> {
+  async deleteContactNote(contactId: string, id: string): Promise<GHLApiResponse<{ succeded: boolean }>> {
     try {
       const response: AxiosResponse<{ succeded: boolean }> = await this.axiosInstance.delete(
-        `/contacts/${contactId}/notes/${noteId}`
+        `/contacts/${contactId}/notes/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1308,7 +1348,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1331,7 +1371,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1347,7 +1387,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.events);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1371,7 +1411,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1393,7 +1433,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1412,7 +1452,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1431,7 +1471,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1447,7 +1487,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1463,23 +1503,120 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Remove contact from all campaigns
-   * DELETE /contacts/{contactId}/campaigns
+   * DELETE /contacts/{contactId}/campaigns/removeAll
+   * Version: 2021-07-28
    */
   async removeContactFromAllCampaigns(contactId: string): Promise<GHLApiResponse<{ succeded: boolean }>> {
     try {
       const response: AxiosResponse<{ succeded: boolean }> = await this.axiosInstance.delete(
-        `/contacts/${contactId}/campaigns`
+        `/contacts/${contactId}/campaigns/removeAll`,
+        {
+          headers: {
+            Version: '2021-07-28'
+          }
+        }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Update contacts tags in bulk (add or remove)
+   * POST /contacts/bulk/tags/update/{type}
+   * Version: 2021-07-28
+   */
+  async updateContactTagsBulk(contactIds: string[], tagIds: string[], type: 'add' | 'remove'): Promise<GHLApiResponse<GHLBulkTagsResponse>> {
+    try {
+      const payload: GHLBulkTagsUpdateRequest = {
+        ids: contactIds,
+        tags: tagIds
+      };
+
+      const response: AxiosResponse<GHLBulkTagsResponse> = await this.axiosInstance.post(
+        `/contacts/bulk/tags/update/${type}`,
+        payload,
+        {
+          headers: {
+            Version: '2021-07-28'
+          }
+        }
+      );
+
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Update contacts business association in bulk
+   * POST /contacts/bulk/business
+   * Version: 2021-07-28
+   */
+  async updateContactBusinessBulk(contactIds: string[], businessId?: string | null): Promise<GHLApiResponse<GHLBulkBusinessResponse>> {
+    try {
+      const payload: GHLBulkBusinessUpdateRequest = {
+        ids: contactIds,
+        businessId: businessId
+      };
+
+      const response: AxiosResponse<GHLBulkBusinessResponse> = await this.axiosInstance.post(
+        '/contacts/bulk/business',
+        payload,
+        {
+          headers: {
+            Version: '2021-07-28'
+          }
+        }
+      );
+
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Get contacts (deprecated)
+   * GET /contacts
+   * Version: 2021-07-28
+   */
+  async getContacts(params: {
+    locationId: string;
+    startAfterId?: string;
+    limit?: number;
+    query?: string;
+  }): Promise<GHLApiResponse<GHLGetContactsResponse>> {
+    try {
+      const queryParams = {
+        locationId: params.locationId,
+        limit: params.limit || 100,
+        ...(params.startAfterId && { startAfterId: params.startAfterId }),
+        ...(params.query && { query: params.query })
+      };
+
+      const response: AxiosResponse<GHLGetContactsResponse> = await this.axiosInstance.get(
+        '/contacts',
+        {
+          params: queryParams,
+          headers: {
+            Version: '2021-07-28'
+          }
+        }
+      );
+
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1498,7 +1635,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1517,7 +1654,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1547,8 +1684,47 @@ export class GHLApiClient {
    */
   updateAccessToken(newToken: string): void {
     this.config.accessToken = newToken;
-    this.axiosInstance.defaults.headers['Authorization'] = `Bearer ${newToken}`;
-            process.stderr.write('[GHL API] Access token updated\n');
+    
+    // Recreate axios instance with new token
+    this.axiosInstance = axios.create({
+      baseURL: this.config.baseUrl,
+      headers: {
+        'Authorization': `Bearer ${this.config.accessToken}`,
+        'Version': this.config.version,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      timeout: 30000 // 30 second timeout
+    });
+
+    // Re-add interceptors
+    this.axiosInstance.interceptors.request.use(
+      (config) => {
+        process.stderr.write(`[GHL API] ${config.method?.toUpperCase()} ${config.url}\n`);
+        return config;
+      },
+      (error) => {
+        console.error('[GHL API] Request error:', error);
+        return Promise.reject(error);
+      }
+    );
+
+    this.axiosInstance.interceptors.response.use(
+      (response) => {
+        process.stderr.write(`[GHL API] Response ${response.status}: ${response.config.url}\n`);
+        return response;
+      },
+      (error: AxiosError<GHLErrorResponse>) => {
+        console.error('[GHL API] Response error:', {
+          status: error.response?.status,
+          message: error.response?.data?.message,
+          url: error.config?.url
+        });
+        return this.handleApiError(error);
+      }
+    );
+
+    process.stderr.write('[GHL API] Access token updated\n');
   }
 
   /**
@@ -1667,7 +1843,7 @@ export class GHLApiClient {
         message: axiosError.message
       }, null, 2)}\n`);
       
-      throw this.handleApiError(axiosError);
+      return this.handleApiError(axiosError);
     }
   }
 
@@ -1688,7 +1864,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1696,15 +1872,15 @@ export class GHLApiClient {
    * Get opportunity by ID
    * GET /opportunities/{id}
    */
-  async getOpportunity(opportunityId: string): Promise<GHLApiResponse<GHLOpportunity>> {
+  async getOpportunity(id: string): Promise<GHLApiResponse<GHLOpportunity>> {
     try {
       const response: AxiosResponse<{ opportunity: GHLOpportunity }> = await this.axiosInstance.get(
-        `/opportunities/${opportunityId}`
+        `/opportunities/${id}`
       );
 
       return this.wrapResponse(response.data.opportunity);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1727,7 +1903,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data.opportunity);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1735,16 +1911,16 @@ export class GHLApiClient {
    * Update existing opportunity
    * PUT /opportunities/{id}
    */
-  async updateOpportunity(opportunityId: string, updates: GHLUpdateOpportunityRequest): Promise<GHLApiResponse<GHLOpportunity>> {
+  async updateOpportunity(id: string, updates: GHLUpdateOpportunityRequest): Promise<GHLApiResponse<GHLOpportunity>> {
     try {
       const response: AxiosResponse<{ opportunity: GHLOpportunity }> = await this.axiosInstance.put(
-        `/opportunities/${opportunityId}`,
+        `/opportunities/${id}`,
         updates
       );
 
       return this.wrapResponse(response.data.opportunity);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1752,18 +1928,18 @@ export class GHLApiClient {
    * Update opportunity status
    * PUT /opportunities/{id}/status
    */
-  async updateOpportunityStatus(opportunityId: string, status: GHLOpportunityStatus): Promise<GHLApiResponse<{ succeded: boolean }>> {
+  async updateOpportunityStatus(id: string, status: GHLOpportunityStatus): Promise<GHLApiResponse<{ succeded: boolean }>> {
     try {
       const payload: GHLUpdateOpportunityStatusRequest = { status };
 
       const response: AxiosResponse<{ succeded: boolean }> = await this.axiosInstance.put(
-        `/opportunities/${opportunityId}/status`,
+        `/opportunities/${id}/status`,
         payload
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1786,7 +1962,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1794,15 +1970,15 @@ export class GHLApiClient {
    * Delete opportunity
    * DELETE /opportunities/{id}
    */
-  async deleteOpportunity(opportunityId: string): Promise<GHLApiResponse<{ succeded: boolean }>> {
+  async deleteOpportunity(id: string): Promise<GHLApiResponse<{ succeded: boolean }>> {
     try {
       const response: AxiosResponse<{ succeded: boolean }> = await this.axiosInstance.delete(
-        `/opportunities/${opportunityId}`
+        `/opportunities/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1810,18 +1986,18 @@ export class GHLApiClient {
    * Add followers to opportunity
    * POST /opportunities/{id}/followers
    */
-  async addOpportunityFollowers(opportunityId: string, followers: string[]): Promise<GHLApiResponse<any>> {
+  async addOpportunityFollowers(id: string, followers: string[]): Promise<GHLApiResponse<any>> {
     try {
       const payload = { followers };
 
       const response: AxiosResponse<any> = await this.axiosInstance.post(
-        `/opportunities/${opportunityId}/followers`,
+        `/opportunities/${id}/followers`,
         payload
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1829,18 +2005,18 @@ export class GHLApiClient {
    * Remove followers from opportunity
    * DELETE /opportunities/{id}/followers
    */
-  async removeOpportunityFollowers(opportunityId: string, followers: string[]): Promise<GHLApiResponse<any>> {
+  async removeOpportunityFollowers(id: string, followers: string[]): Promise<GHLApiResponse<any>> {
     try {
       const payload = { followers };
 
       const response: AxiosResponse<any> = await this.axiosInstance.delete(
-        `/opportunities/${opportunityId}/followers`,
+        `/opportunities/${id}/followers`,
         { data: payload }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1865,7 +2041,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1887,7 +2063,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1910,7 +2086,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1932,7 +2108,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1948,7 +2124,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1965,7 +2141,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -1981,7 +2157,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2007,7 +2183,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2033,7 +2209,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2052,14 +2228,15 @@ export class GHLApiClient {
         ...(slotParams.enableLookBusy !== undefined && { enableLookBusy: slotParams.enableLookBusy })
       };
 
+      const { calendarId } = slotParams;
       const response: AxiosResponse<GHLGetFreeSlotsResponse> = await this.axiosInstance.get(
-        `/calendars/${slotParams.calendarId}/free-slots`,
+        `/calendars/${calendarId}/free-slots`,
         { params }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2081,7 +2258,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2089,15 +2266,15 @@ export class GHLApiClient {
    * Get appointment by ID
    * GET /calendars/events/appointments/{eventId}
    */
-  async getAppointment(appointmentId: string): Promise<GHLApiResponse<{ event: GHLCalendarEvent }>> {
+  async getAppointment(eventId: string): Promise<GHLApiResponse<{ event: GHLCalendarEvent }>> {
     try {
       const response: AxiosResponse<{ event: GHLCalendarEvent }> = await this.axiosInstance.get(
-        `/calendars/events/appointments/${appointmentId}`
+        `/calendars/events/appointments/${eventId}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2105,16 +2282,16 @@ export class GHLApiClient {
    * Update appointment by ID
    * PUT /calendars/events/appointments/{eventId}
    */
-  async updateAppointment(appointmentId: string, updates: GHLUpdateAppointmentRequest): Promise<GHLApiResponse<GHLCalendarEvent>> {
+  async updateAppointment(eventId: string, updates: GHLUpdateAppointmentRequest): Promise<GHLApiResponse<GHLCalendarEvent>> {
     try {
       const response: AxiosResponse<GHLCalendarEvent> = await this.axiosInstance.put(
-        `/calendars/events/appointments/${appointmentId}`,
+        `/calendars/events/appointments/${eventId}`,
         updates
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2122,15 +2299,15 @@ export class GHLApiClient {
    * Delete appointment by ID  
    * DELETE /calendars/events/appointments/{eventId}
    */
-  async deleteAppointment(appointmentId: string): Promise<GHLApiResponse<{ succeeded: boolean }>> {
+  async deleteAppointment(eventId: string): Promise<GHLApiResponse<{ succeeded: boolean }>> {
     try {
       const response: AxiosResponse<{ succeeded: boolean }> = await this.axiosInstance.delete(
-        `/calendars/events/appointments/${appointmentId}`
+        `/calendars/events/appointments/${eventId}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2140,16 +2317,16 @@ export class GHLApiClient {
    * Update block slot by ID
    * PUT /calendars/events/block-slots/{eventId}
    */
-  async updateBlockSlot(blockSlotId: string, updates: GHLUpdateBlockSlotRequest): Promise<GHLApiResponse<GHLBlockSlotResponse>> {
+  async updateBlockSlot(eventId: string, updates: GHLUpdateBlockSlotRequest): Promise<GHLApiResponse<GHLBlockSlotResponse>> {
     try {
       const response: AxiosResponse<GHLBlockSlotResponse> = await this.axiosInstance.put(
-        `/calendars/events/block-slots/${blockSlotId}`,
+        `/calendars/events/block-slots/${eventId}`,
         updates
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2167,7 +2344,7 @@ export class GHLApiClient {
       });
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2180,7 +2357,7 @@ export class GHLApiClient {
       });
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2194,7 +2371,7 @@ export class GHLApiClient {
       });
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2209,17 +2386,18 @@ export class GHLApiClient {
       });
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   async deleteEmailTemplate(params: MCPDeleteEmailTemplateParams): Promise<GHLApiResponse<any>> {
     try {
       const { templateId } = params;
-      const response: AxiosResponse<any> = await this.axiosInstance.delete(`/emails/builder/${this.config.locationId}/${templateId}`);
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<any> = await this.axiosInstance.delete(`/emails/builder/${locationId}/${templateId}`);
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2254,7 +2432,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2270,7 +2448,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2287,7 +2465,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2304,7 +2482,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2323,7 +2501,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2343,7 +2521,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2360,7 +2538,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2376,7 +2554,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2393,7 +2571,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2409,7 +2587,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2430,7 +2608,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2454,7 +2632,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2471,7 +2649,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2479,15 +2657,15 @@ export class GHLApiClient {
    * Get custom field by ID
    * GET /locations/{locationId}/customFields/{id}
    */
-  async getLocationCustomField(locationId: string, customFieldId: string): Promise<GHLApiResponse<GHLLocationCustomFieldResponse>> {
+  async getLocationCustomField(locationId: string, id: string): Promise<GHLApiResponse<GHLLocationCustomFieldResponse>> {
     try {
       const response: AxiosResponse<GHLLocationCustomFieldResponse> = await this.axiosInstance.get(
-        `/locations/${locationId}/customFields/${customFieldId}`
+        `/locations/${locationId}/customFields/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2495,16 +2673,16 @@ export class GHLApiClient {
    * Update custom field
    * PUT /locations/{locationId}/customFields/{id}
    */
-  async updateLocationCustomField(locationId: string, customFieldId: string, fieldData: GHLUpdateCustomFieldRequest): Promise<GHLApiResponse<GHLLocationCustomFieldResponse>> {
+  async updateLocationCustomField(locationId: string, id: string, fieldData: GHLUpdateCustomFieldRequest): Promise<GHLApiResponse<GHLLocationCustomFieldResponse>> {
     try {
       const response: AxiosResponse<GHLLocationCustomFieldResponse> = await this.axiosInstance.put(
-        `/locations/${locationId}/customFields/${customFieldId}`,
+        `/locations/${locationId}/customFields/${id}`,
         fieldData
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2512,15 +2690,15 @@ export class GHLApiClient {
    * Delete custom field
    * DELETE /locations/{locationId}/customFields/{id}
    */
-  async deleteLocationCustomField(locationId: string, customFieldId: string): Promise<GHLApiResponse<GHLCustomFieldDeleteResponse>> {
+  async deleteLocationCustomField(locationId: string, id: string): Promise<GHLApiResponse<GHLCustomFieldDeleteResponse>> {
     try {
       const response: AxiosResponse<GHLCustomFieldDeleteResponse> = await this.axiosInstance.delete(
-        `/locations/${locationId}/customFields/${customFieldId}`
+        `/locations/${locationId}/customFields/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2540,7 +2718,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2560,7 +2738,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2577,7 +2755,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2585,15 +2763,15 @@ export class GHLApiClient {
    * Get custom value by ID
    * GET /locations/{locationId}/customValues/{id}
    */
-  async getLocationCustomValue(locationId: string, customValueId: string): Promise<GHLApiResponse<GHLLocationCustomValueResponse>> {
+  async getLocationCustomValue(locationId: string, id: string): Promise<GHLApiResponse<GHLLocationCustomValueResponse>> {
     try {
       const response: AxiosResponse<GHLLocationCustomValueResponse> = await this.axiosInstance.get(
-        `/locations/${locationId}/customValues/${customValueId}`
+        `/locations/${locationId}/customValues/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2601,16 +2779,16 @@ export class GHLApiClient {
    * Update custom value
    * PUT /locations/{locationId}/customValues/{id}
    */
-  async updateLocationCustomValue(locationId: string, customValueId: string, valueData: GHLCustomValueRequest): Promise<GHLApiResponse<GHLLocationCustomValueResponse>> {
+  async updateLocationCustomValue(locationId: string, id: string, valueData: GHLCustomValueRequest): Promise<GHLApiResponse<GHLLocationCustomValueResponse>> {
     try {
       const response: AxiosResponse<GHLLocationCustomValueResponse> = await this.axiosInstance.put(
-        `/locations/${locationId}/customValues/${customValueId}`,
+        `/locations/${locationId}/customValues/${id}`,
         valueData
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2618,15 +2796,15 @@ export class GHLApiClient {
    * Delete custom value
    * DELETE /locations/{locationId}/customValues/{id}
    */
-  async deleteLocationCustomValue(locationId: string, customValueId: string): Promise<GHLApiResponse<GHLCustomValueDeleteResponse>> {
+  async deleteLocationCustomValue(locationId: string, id: string): Promise<GHLApiResponse<GHLCustomValueDeleteResponse>> {
     try {
       const response: AxiosResponse<GHLCustomValueDeleteResponse> = await this.axiosInstance.delete(
-        `/locations/${locationId}/customValues/${customValueId}`
+        `/locations/${locationId}/customValues/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2661,7 +2839,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2669,15 +2847,15 @@ export class GHLApiClient {
    * Delete location template
    * DELETE /locations/{locationId}/templates/{id}
    */
-  async deleteLocationTemplate(locationId: string, templateId: string): Promise<GHLApiResponse<any>> {
+  async deleteLocationTemplate(locationId: string, id: string): Promise<GHLApiResponse<any>> {
     try {
       const response: AxiosResponse<any> = await this.axiosInstance.delete(
-        `/locations/${locationId}/templates/${templateId}`
+        `/locations/${locationId}/templates/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2691,12 +2869,16 @@ export class GHLApiClient {
    */
   async getTimezones(locationId?: string): Promise<GHLApiResponse<string[]>> {
     try {
-      const endpoint = locationId ? `/locations/${locationId}/timezones` : '/locations/timezones';
-      const response: AxiosResponse<string[]> = await this.axiosInstance.get(endpoint);
+      let response: AxiosResponse<string[]>;
+      if (locationId) {
+        response = await this.axiosInstance.get(`/locations/${locationId}/timezones`);
+      } else {
+        response = await this.axiosInstance.get('/locations/timezones');
+      }
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2722,7 +2904,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2734,15 +2916,15 @@ export class GHLApiClient {
    * Get email message by ID
    * GET /conversations/messages/email/{id}
    */
-  async getEmailMessage(emailMessageId: string): Promise<GHLApiResponse<GHLEmailMessage>> {
+  async getEmailMessage(id: string): Promise<GHLApiResponse<GHLEmailMessage>> {
     try {
       const response: AxiosResponse<GHLEmailMessage> = await this.axiosInstance.get(
-        `/conversations/messages/email/${emailMessageId}`
+        `/conversations/messages/email/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2758,7 +2940,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2776,7 +2958,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2794,7 +2976,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2811,7 +2993,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2834,7 +3016,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2852,7 +3034,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2860,11 +3042,11 @@ export class GHLApiClient {
    * Get message recording
    * GET /conversations/messages/{messageId}/locations/{locationId}/recording
    */
-  async getMessageRecording(messageId: string, locationId?: string): Promise<GHLApiResponse<GHLMessageRecordingResponse>> {
+  async getMessageRecording(messageId: string, locId?: string): Promise<GHLApiResponse<GHLMessageRecordingResponse>> {
     try {
-      const locId = locationId || this.config.locationId;
+      const locationId = locId || this.config.locationId;
       const response: AxiosResponse<ArrayBuffer> = await this.axiosInstance.get(
-        `/conversations/messages/${messageId}/locations/${locId}/recording`,
+        `/conversations/messages/${messageId}/locations/${locationId}/recording`,
         { 
           headers: this.getConversationHeaders(),
           responseType: 'arraybuffer'
@@ -2879,7 +3061,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(recordingResponse);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2887,17 +3069,17 @@ export class GHLApiClient {
    * Get message transcription
    * GET /conversations/locations/{locationId}/messages/{messageId}/transcription
    */
-  async getMessageTranscription(messageId: string, locationId?: string): Promise<GHLApiResponse<GHLMessageTranscriptionResponse>> {
+  async getMessageTranscription(messageId: string, locId?: string): Promise<GHLApiResponse<GHLMessageTranscriptionResponse>> {
     try {
-      const locId = locationId || this.config.locationId;
+      const locationId = locId || this.config.locationId;
       const response: AxiosResponse<GHLMessageTranscription[]> = await this.axiosInstance.get(
-        `/conversations/locations/${locId}/messages/${messageId}/transcription`,
+        `/conversations/locations/${locationId}/messages/${messageId}/transcription`,
         { headers: this.getConversationHeaders() }
       );
 
       return this.wrapResponse({ transcriptions: response.data });
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2905,11 +3087,11 @@ export class GHLApiClient {
    * Download message transcription
    * GET /conversations/locations/{locationId}/messages/{messageId}/transcription/download
    */
-  async downloadMessageTranscription(messageId: string, locationId?: string): Promise<GHLApiResponse<string>> {
+  async downloadMessageTranscription(messageId: string, locId?: string): Promise<GHLApiResponse<string>> {
     try {
-      const locId = locationId || this.config.locationId;
+      const locationId = locId || this.config.locationId;
       const response: AxiosResponse<string> = await this.axiosInstance.get(
-        `/conversations/locations/${locId}/messages/${messageId}/transcription/download`,
+        `/conversations/locations/${locationId}/messages/${messageId}/transcription/download`,
         { 
           headers: this.getConversationHeaders(),
           responseType: 'text'
@@ -2918,7 +3100,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2936,7 +3118,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2958,7 +3140,7 @@ export class GHLApiClient {
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -2974,53 +3156,53 @@ export class GHLApiClient {
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Get Social Media Post by ID
    */
-  async getSocialPost(postId: string): Promise<GHLApiResponse<GHLGetPostResponse>> {
+  async getSocialPost(id: string): Promise<GHLApiResponse<GHLGetPostResponse>> {
     try {
       const locationId = this.config.locationId;
       const response: AxiosResponse<GHLGetPostResponse> = await this.axiosInstance.get(
-        `/social-media-posting/${locationId}/posts/${postId}`
+        `/social-media-posting/${locationId}/posts/${id}`
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Update Social Media Post
    */
-  async updateSocialPost(postId: string, updateData: GHLUpdatePostRequest): Promise<GHLApiResponse<any>> {
+  async updateSocialPost(id: string, updateData: GHLUpdatePostRequest): Promise<GHLApiResponse<any>> {
     try {
       const locationId = this.config.locationId;
       const response: AxiosResponse<any> = await this.axiosInstance.put(
-        `/social-media-posting/${locationId}/posts/${postId}`,
+        `/social-media-posting/${locationId}/posts/${id}`,
         updateData
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Delete Social Media Post
    */
-  async deleteSocialPost(postId: string): Promise<GHLApiResponse<any>> {
+  async deleteSocialPost(id: string): Promise<GHLApiResponse<any>> {
     try {
       const locationId = this.config.locationId;
       const response: AxiosResponse<any> = await this.axiosInstance.delete(
-        `/social-media-posting/${locationId}/posts/${postId}`
+        `/social-media-posting/${locationId}/posts/${id}`
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3036,7 +3218,7 @@ export class GHLApiClient {
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3053,14 +3235,14 @@ export class GHLApiClient {
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Delete Social Media Account
    */
-  async deleteSocialAccount(accountId: string, companyId?: string, userId?: string): Promise<GHLApiResponse<any>> {
+  async deleteSocialAccount(id: string, companyId?: string, userId?: string): Promise<GHLApiResponse<any>> {
     try {
       const locationId = this.config.locationId;
       const params: any = {};
@@ -3068,12 +3250,12 @@ export class GHLApiClient {
       if (userId) params.userId = userId;
       
       const response: AxiosResponse<any> = await this.axiosInstance.delete(
-        `/social-media-posting/${locationId}/accounts/${accountId}`,
+        `/social-media-posting/${locationId}/accounts/${id}`,
         { params }
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3092,7 +3274,7 @@ export class GHLApiClient {
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3114,7 +3296,7 @@ export class GHLApiClient {
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3130,14 +3312,14 @@ export class GHLApiClient {
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Get CSV Posts
    */
-  async getSocialCSVPosts(csvId: string, skip?: number, limit?: number): Promise<GHLApiResponse<any>> {
+  async getSocialCSVPosts(id: string, skip?: number, limit?: number): Promise<GHLApiResponse<any>> {
     try {
       const locationId = this.config.locationId;
       const params: any = {};
@@ -3145,43 +3327,43 @@ export class GHLApiClient {
       if (limit !== undefined) params.limit = limit.toString();
       
       const response: AxiosResponse<any> = await this.axiosInstance.get(
-        `/social-media-posting/${locationId}/csv/${csvId}`,
+        `/social-media-posting/${locationId}/csv/${id}`,
         { params }
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Start CSV Finalization
    */
-  async finalizeSocialCSV(csvId: string, finalizeData: GHLCSVFinalizeRequest): Promise<GHLApiResponse<any>> {
+  async finalizeSocialCSV(id: string, finalizeData: GHLCSVFinalizeRequest): Promise<GHLApiResponse<any>> {
     try {
       const locationId = this.config.locationId;
       const response: AxiosResponse<any> = await this.axiosInstance.patch(
-        `/social-media-posting/${locationId}/csv/${csvId}`,
+        `/social-media-posting/${locationId}/csv/${id}`,
         finalizeData
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Delete CSV Import
    */
-  async deleteSocialCSV(csvId: string): Promise<GHLApiResponse<any>> {
+  async deleteSocialCSV(id: string): Promise<GHLApiResponse<any>> {
     try {
       const locationId = this.config.locationId;
       const response: AxiosResponse<any> = await this.axiosInstance.delete(
-        `/social-media-posting/${locationId}/csv/${csvId}`
+        `/social-media-posting/${locationId}/csv/${id}`
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3196,7 +3378,7 @@ export class GHLApiClient {
       );
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3206,77 +3388,1253 @@ export class GHLApiClient {
    * Get Social Media Categories
    */
   async getSocialCategories(searchText?: string, limit?: number, skip?: number): Promise<GHLApiResponse<GHLGetCategoriesResponse>> {
-    // TODO: Implement this method properly
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const params: any = {};
+      if (searchText) params.searchText = searchText;
+      if (limit !== undefined) params.limit = String(limit);
+      if (skip !== undefined) params.skip = String(skip);
+      const response: AxiosResponse<GHLGetCategoriesResponse> = await this.axiosInstance.get(
+        `/social-media-posting/${locationId}/categories`,
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
-  // TODO: Implement remaining social media API methods
-  async getSocialCategory(categoryId: string): Promise<GHLApiResponse<GHLGetCategoryResponse>> {
-    throw new Error('Method not yet implemented');
+  async getSocialCategory(id: string): Promise<GHLApiResponse<GHLGetCategoryResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLGetCategoryResponse> = await this.axiosInstance.get(
+        `/social-media-posting/${locationId}/categories/${id}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async getSocialTags(searchText?: string, limit?: number, skip?: number): Promise<GHLApiResponse<GHLGetTagsResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const params: any = {};
+      if (searchText) params.searchText = searchText;
+      if (limit !== undefined) params.limit = String(limit);
+      if (skip !== undefined) params.skip = String(skip);
+      const response: AxiosResponse<GHLGetTagsResponse> = await this.axiosInstance.get(
+        `/social-media-posting/${locationId}/tags`,
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
-  async getSocialTagsByIds(tagData: GHLGetTagsByIdsRequest): Promise<GHLApiResponse<GHLGetTagsByIdsResponse>> {
-    throw new Error('Method not yet implemented');
+  /**
+   * Get Social Tags by IDs (details)
+   */
+  async getSocialTagsByIds(ids: string[]): Promise<GHLApiResponse<GHLGetTagsByIdsResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const payload: GHLGetTagsByIdsRequest = { ids } as any;
+      const response: AxiosResponse<GHLGetTagsByIdsResponse> = await this.axiosInstance.post(
+        `/social-media-posting/${locationId}/tags/details`,
+        payload
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
+
+  // ===== STATISTICS =====
+
+  /**
+   * Get Social Media Statistics
+   * POST /social-media-posting/statistics
+   */
+  async getSocialStatistics(profileIds: string[], platforms?: string[]): Promise<GHLApiResponse<any>> {
+    try {
+      const locationId = this.config.locationId;
+      const params = { locationId } as any;
+      const payload: any = { profileIds };
+      if (platforms && platforms.length) payload.platforms = platforms;
+      const response: AxiosResponse<any> = await this.axiosInstance.post(
+        '/social-media-posting/statistics',
+        payload,
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  // ============================================================================
+  // VOICE AI API METHODS
+  // ============================================================================
+
+  /**
+   * Create Voice AI Agent
+   * POST /voice-ai/agents
+   */
+  async createVoiceAIAgent(agentData: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(
+        '/voice-ai/agents',
+        agentData,
+        { headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  // ============================================================================
+  // BUSINESSES API METHODS
+  // ============================================================================
+
+  /**
+   * List Businesses
+   * GET /businesses/
+   */
+  async listBusinesses(locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId } as any;
+      const response: AxiosResponse<any> = await this.axiosInstance.get('/businesses/', { params });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Create Business
+   * POST /businesses/
+   */
+  async createBusiness(businessData: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post('/businesses/', businessData);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Get Business by ID
+   * GET /businesses/{businessId}
+   */
+  async getBusiness(businessId: string): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.get(`/businesses/${businessId}`);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Update Business
+   * PUT /businesses/{businessId}
+   */
+  async updateBusiness(businessId: string, updates: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.put(`/businesses/${businessId}`, updates);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Delete Business
+   * DELETE /businesses/{businessId}
+   */
+  async deleteBusiness(businessId: string): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.delete(`/businesses/${businessId}`);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  // ============================================================================
+  // USERS API METHODS
+  // ============================================================================
+
+  /**
+   * List Users by location
+   * GET /users/
+   */
+  async listUsers(locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId } as any;
+      const response: AxiosResponse<any> = await this.axiosInstance.get('/users/', { params });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Create User
+   * POST /users/
+   */
+  async createUser(userData: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post('/users/', userData);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Get User by ID
+   * GET /users/{userId}
+   */
+  async getUser(userId: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId } as any;
+      const response: AxiosResponse<any> = await this.axiosInstance.get(`/users/${userId}`, { params });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Update User
+   * PUT /users/{userId}
+   */
+  async updateUser(userId: string, updates: any, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId } as any;
+      const response: AxiosResponse<any> = await this.axiosInstance.put(`/users/${userId}`, updates, { params });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Delete User
+   * DELETE /users/{userId}
+   */
+  async deleteUser(userId: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId } as any;
+      const response: AxiosResponse<any> = await this.axiosInstance.delete(`/users/${userId}`, { params });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Search Users
+   * GET /users/search (requires companyId)
+   */
+  async searchUsers(params: { companyId: string; query?: string; skip?: number; limit?: number; locationId?: string; type?: string; role?: string; ids?: string; sort?: string; sortDirection?: string; enabled2waySync?: boolean }): Promise<GHLApiResponse<any>> {
+    try {
+      const qp: any = { companyId: params.companyId };
+      if (params.query) qp.query = params.query;
+      if (params.skip !== undefined) qp.skip = String(params.skip);
+      if (params.limit !== undefined) qp.limit = String(params.limit);
+      if (params.locationId) qp.locationId = params.locationId;
+      if (params.type) qp.type = params.type;
+      if (params.role) qp.role = params.role;
+      if (params.ids) qp.ids = params.ids;
+      if (params.sort) qp.sort = params.sort;
+      if (params.sortDirection) qp.sortDirection = params.sortDirection;
+      if (params.enabled2waySync !== undefined) qp.enabled2waySync = params.enabled2waySync;
+      const response: AxiosResponse<any> = await this.axiosInstance.get('/users/search', { params: qp });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Filter Users by Email
+   * POST /users/search/filter-by-email
+   */
+  async filterUsersByEmail(body: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post('/users/search/filter-by-email', body);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  // ============================================================================
+  // SAAS API METHODS (Public and Internal)
+  // ============================================================================
+
+  /**
+   * Public: List locations with SaaS details (filters)
+   * GET /saas-api/public-api/locations
+   */
+  async saasPublicListLocations(params?: { customerId?: string; subscriptionId?: string; companyId?: string }): Promise<GHLApiResponse<any>> {
+    try {
+      const qp: any = {};
+      if (params?.customerId) qp.customerId = params.customerId;
+      if (params?.subscriptionId) qp.subscriptionId = params.subscriptionId;
+      if (params?.companyId) qp.companyId = params.companyId;
+      const response: AxiosResponse<any> = await this.axiosInstance.get('/saas-api/public-api/locations', { params: qp });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** PUT /saas-api/public-api/update-saas-subscription/{locationId} */
+  async saasPublicUpdateSubscription(locationId: string, updates: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.put(`/saas-api/public-api/update-saas-subscription/${locationId}`, updates);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** POST /saas-api/public-api/bulk-disable-saas/{companyId} */
+  async saasPublicBulkDisable(companyId: string, body: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(`/saas-api/public-api/bulk-disable-saas/${companyId}`, body);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** POST /saas-api/public-api/enable-saas/{locationId} */
+  async saasPublicEnable(locationId: string, body: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(`/saas-api/public-api/enable-saas/${locationId}`, body);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** POST /saas-api/public-api/pause/{locationId} */
+  async saasPublicPause(locationId: string, body: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(`/saas-api/public-api/pause/${locationId}`, body);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** POST /saas-api/public-api/update-rebilling/{companyId} */
+  async saasPublicUpdateRebilling(companyId: string, body: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(`/saas-api/public-api/update-rebilling/${companyId}`, body);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /saas-api/public-api/agency-plans/{companyId} */
+  async saasPublicGetAgencyPlans(companyId: string): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.get(`/saas-api/public-api/agency-plans/${companyId}`);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /saas-api/public-api/get-saas-subscription/{locationId} */
+  async saasPublicGetSubscription(locationId: string, companyId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params: any = {};
+      if (companyId) params.companyId = companyId;
+      const response: AxiosResponse<any> = await this.axiosInstance.get(`/saas-api/public-api/get-saas-subscription/${locationId}`, { params });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** POST /saas-api/public-api/bulk-enable-saas/{companyId} */
+  async saasPublicBulkEnable(companyId: string, body: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(`/saas-api/public-api/bulk-enable-saas/${companyId}`, body);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /saas-api/public-api/saas-locations/{companyId} */
+  async saasPublicGetSaaSLocations(companyId: string, page?: number): Promise<GHLApiResponse<any>> {
+    try {
+      const params: any = {};
+      if (page !== undefined) params.page = page;
+      const response: AxiosResponse<any> = await this.axiosInstance.get(`/saas-api/public-api/saas-locations/${companyId}`, { params });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /saas-api/public-api/saas-plan/{planId} */
+  async saasPublicGetPlan(planId: string, companyId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params: any = {};
+      if (companyId) params.companyId = companyId;
+      const response: AxiosResponse<any> = await this.axiosInstance.get(`/saas-api/public-api/saas-plan/${planId}`, { params });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  // Internal SAAS (same endpoints without /public-api)
+
+  async saasListLocations(params?: { customerId?: string; subscriptionId?: string; companyId?: string }): Promise<GHLApiResponse<any>> {
+    try {
+      const qp: any = {};
+      if (params?.customerId) qp.customerId = params.customerId;
+      if (params?.subscriptionId) qp.subscriptionId = params.subscriptionId;
+      if (params?.companyId) qp.companyId = params.companyId;
+      const response: AxiosResponse<any> = await this.axiosInstance.get('/saas/locations', { params: qp });
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  async saasUpdateSubscription(locationId: string, updates: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.put(`/saas/update-saas-subscription/${locationId}`, updates); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasBulkDisable(companyId: string, body: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.post(`/saas/bulk-disable-saas/${companyId}`, body); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasEnable(locationId: string, body: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.post(`/saas/enable-saas/${locationId}`, body); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasPause(locationId: string, body: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.post(`/saas/pause/${locationId}`, body); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasUpdateRebilling(companyId: string, body: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.post(`/saas/update-rebilling/${companyId}`, body); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasGetAgencyPlans(companyId: string): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.get(`/saas/agency-plans/${companyId}`); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasGetSubscription(locationId: string, companyId?: string): Promise<GHLApiResponse<any>> {
+    try { const params: any = {}; if (companyId) params.companyId = companyId; const r = await this.axiosInstance.get(`/saas/get-saas-subscription/${locationId}`, { params }); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasBulkEnable(companyId: string, body: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.post(`/saas/bulk-enable-saas/${companyId}`, body); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasGetLocationsByCompany(companyId: string, page?: number): Promise<GHLApiResponse<any>> {
+    try { const params: any = {}; if (page !== undefined) params.page = page; const r = await this.axiosInstance.get(`/saas/saas-locations/${companyId}`, { params }); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  async saasGetPlan(planId: string, companyId?: string): Promise<GHLApiResponse<any>> {
+    try { const params: any = {}; if (companyId) params.companyId = companyId; const r = await this.axiosInstance.get(`/saas/saas-plan/${planId}`, { params }); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * List Voice AI Agents
+   * GET /voice-ai/agents
+   */
+  async listVoiceAIAgents(params?: { locationId?: string; page?: number; pageSize?: number; query?: string }): Promise<GHLApiResponse<any>> {
+    try {
+      const queryParams: any = {
+        locationId: params?.locationId || this.config.locationId
+      };
+      if (params?.page !== undefined) queryParams.page = params.page;
+      if (params?.pageSize !== undefined) queryParams.pageSize = params.pageSize;
+      if (params?.query) queryParams.query = params.query;
+      const response: AxiosResponse<any> = await this.axiosInstance.get(
+        '/voice-ai/agents',
+        { params: queryParams, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Patch Voice AI Agent
+   * PATCH /voice-ai/agents/{agentId}
+   */
+  async patchVoiceAIAgent(agentId: string, updates: any, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId };
+      const response: AxiosResponse<any> = await this.axiosInstance.patch(
+        `/voice-ai/agents/${agentId}`,
+        updates,
+        { params, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Get Voice AI Agent by ID
+   * GET /voice-ai/agents/{agentId}
+   */
+  async getVoiceAIAgent(agentId: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId };
+      const response: AxiosResponse<any> = await this.axiosInstance.get(
+        `/voice-ai/agents/${agentId}`,
+        { params, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Delete Voice AI Agent
+   * DELETE /voice-ai/agents/{agentId}
+   */
+  async deleteVoiceAIAgent(agentId: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId };
+      const response: AxiosResponse<any> = await this.axiosInstance.delete(
+        `/voice-ai/agents/${agentId}`,
+        { params, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * List Voice AI Call Logs
+   * GET /voice-ai/dashboard/call-logs
+   */
+  async listVoiceAICallLogs(params?: { locationId?: string; agentId?: string; contactId?: string; callType?: 'LIVE'|'TRIAL'; startDate?: number; endDate?: number; actionType?: string; sortBy?: 'duration'|'createdAt'; sort?: 'ascend'|'descend'; page?: number; pageSize?: number }): Promise<GHLApiResponse<any>> {
+    try {
+      const queryParams: any = { locationId: params?.locationId || this.config.locationId };
+      if (params?.agentId) queryParams.agentId = params.agentId;
+      if (params?.contactId) queryParams.contactId = params.contactId;
+      if (params?.callType) queryParams.callType = params.callType;
+      if (params?.startDate !== undefined) queryParams.startDate = params.startDate;
+      if (params?.endDate !== undefined) queryParams.endDate = params.endDate;
+      if (params?.actionType) queryParams.actionType = params.actionType;
+      if (params?.sortBy) queryParams.sortBy = params.sortBy;
+      if (params?.sort) queryParams.sort = params.sort;
+      if (params?.page !== undefined) queryParams.page = params.page;
+      if (params?.pageSize !== undefined) queryParams.pageSize = params.pageSize;
+      const response: AxiosResponse<any> = await this.axiosInstance.get(
+        '/voice-ai/dashboard/call-logs',
+        { params: queryParams, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Get Voice AI Call Log by ID
+   * GET /voice-ai/dashboard/call-logs/{callId}
+   */
+  async getVoiceAICallLog(callId: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId };
+      const response: AxiosResponse<any> = await this.axiosInstance.get(
+        `/voice-ai/dashboard/call-logs/${callId}`,
+        { params, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Create Voice AI Action
+   * POST /voice-ai/actions
+   */
+  async createVoiceAIAction(actionData: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(
+        '/voice-ai/actions',
+        actionData,
+        { headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Get Voice AI Action by ID
+   * GET /voice-ai/actions/{actionId}
+   */
+  async getVoiceAIAction(actionId: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId };
+      const response: AxiosResponse<any> = await this.axiosInstance.get(
+        `/voice-ai/actions/${actionId}`,
+        { params, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Update Voice AI Action
+   * PUT /voice-ai/actions/{actionId}
+   */
+  async updateVoiceAIAction(actionId: string, updates: any, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId };
+      const response: AxiosResponse<any> = await this.axiosInstance.put(
+        `/voice-ai/actions/${actionId}`,
+        updates,
+        { params, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Delete Voice AI Action
+   * DELETE /voice-ai/actions/{actionId}
+   */
+  async deleteVoiceAIAction(actionId: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId };
+      const response: AxiosResponse<any> = await this.axiosInstance.delete(
+        `/voice-ai/actions/${actionId}`,
+        { params, headers: this.getHeadersForVersion('2021-04-15') }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  // ============================================================================
+  // LOCATIONS — RECURRING TASKS
+  // ============================================================================
+
+  /**
+   * Create Recurring Task
+   * POST /locations/{locationId}/recurring-tasks
+   */
+  async createLocationRecurringTask(locationId: string, taskData: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(
+        `/locations/${locationId}/recurring-tasks`,
+        taskData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Get Recurring Task By Id
+   * GET /locations/{locationId}/recurring-tasks/{id}
+   */
+  async getLocationRecurringTask(locationId: string, id: string): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.get(
+        `/locations/${locationId}/recurring-tasks/${id}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Update Recurring Task
+   * PUT /locations/{locationId}/recurring-tasks/{id}
+   */
+  async updateLocationRecurringTask(locationId: string, id: string, updates: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.put(
+        `/locations/${locationId}/recurring-tasks/${id}`,
+        updates
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Delete Recurring Task
+   * DELETE /locations/{locationId}/recurring-tasks/{id}
+   */
+  async deleteLocationRecurringTask(locationId: string, id: string): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.delete(
+        `/locations/${locationId}/recurring-tasks/${id}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  // ============================================================================
+  // MEDIAS — FOLDER & BULK OPERATIONS
+  // ============================================================================
+
+  /**
+   * Update File/Folder
+   * POST /medias/{id}
+   */
+  async updateMediaItem(id: string, updateData: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(
+        `/medias/${id}`,
+        updateData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Create Folder
+   * POST /medias/folder
+   */
+  async createMediaFolder(folderData: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(
+        '/medias/folder',
+        folderData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Bulk Update Files/Folders
+   * PUT /medias/update-files
+   */
+  async bulkUpdateMediaItems(updatePayload: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.put(
+        '/medias/update-files',
+        updatePayload
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Bulk Delete/Trash Files or Folders
+   * PUT /medias/delete-files
+   */
+  async bulkDeleteMediaItems(deletePayload: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.put(
+        '/medias/delete-files',
+        deletePayload
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  // ============================================================================
+  // PRODUCTS — BULK OPERATIONS
+  // ============================================================================
+
+  /**
+   * Bulk Edit Products
+   * POST /products/bulk-update/edit
+   */
+  async bulkEditProducts(editPayload: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post('/products/bulk-update/edit', editPayload);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /**
+   * Update store product priorities
+   * POST /products/store/{storeId}/priority
+   */
+  async updateStoreProductPriority(storeId: string, priorityPayload: any): Promise<GHLApiResponse<any>> {
+    try {
+      const response: AxiosResponse<any> = await this.axiosInstance.post(`/products/store/${storeId}/priority`, priorityPayload);
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  // ============================================================================
+  // SURVEYS — SUBMISSIONS
+  // ============================================================================
+
+
+  // ============================================================================
+  // FUNNELS API METHODS
+  // ============================================================================
+
+  /** POST /funnels/lookup/redirect */
+  async createFunnelRedirect(payload: any): Promise<GHLApiResponse<any>> {
+    try {
+      const r = await this.axiosInstance.post('/funnels/lookup/redirect', payload);
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /funnels/lookup/redirect/list */
+  async listFunnelRedirects(params: { locationId?: string; limit?: number; offset?: number; search?: string } = {}): Promise<GHLApiResponse<any>> {
+    try {
+      const qp: any = {};
+      if (params.locationId) qp.locationId = params.locationId;
+      if (params.limit !== undefined) qp.limit = params.limit;
+      if (params.offset !== undefined) qp.offset = params.offset;
+      if (params.search) qp.search = params.search;
+      const r = await this.axiosInstance.get('/funnels/lookup/redirect/list', { params: qp });
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** PATCH /funnels/lookup/redirect/{id} */
+  async updateFunnelRedirect(id: string, updates: any): Promise<GHLApiResponse<any>> {
+    try {
+      const r = await this.axiosInstance.patch(`/funnels/lookup/redirect/${id}`, updates);
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** DELETE /funnels/lookup/redirect/{id} */
+  async deleteFunnelRedirect(id: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params: any = {};
+      if (locationId) params.locationId = locationId;
+      const r = await this.axiosInstance.delete(`/funnels/lookup/redirect/${id}`, { params });
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /funnels/funnel/list */
+  async listFunnels(params: { locationId?: string; type?: string; category?: string; offset?: number; limit?: number; parentId?: string; name?: string } = {}): Promise<GHLApiResponse<any>> {
+    try {
+      const qp: any = {};
+      if (params.locationId) qp.locationId = params.locationId;
+      if (params.type) qp.type = params.type;
+      if (params.category) qp.category = params.category;
+      if (params.offset !== undefined) qp.offset = params.offset;
+      if (params.limit !== undefined) qp.limit = params.limit;
+      if (params.parentId) qp.parentId = params.parentId;
+      if (params.name) qp.name = params.name;
+      const r = await this.axiosInstance.get('/funnels/funnel/list', { params: qp });
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /funnels/page */
+  async listFunnelPages(params: { locationId?: string; funnelId?: string; name?: string; limit?: number; offset?: number } = {}): Promise<GHLApiResponse<any>> {
+    try {
+      const qp: any = {};
+      if (params.locationId) qp.locationId = params.locationId;
+      if (params.funnelId) qp.funnelId = params.funnelId;
+      if (params.name) qp.name = params.name;
+      if (params.limit !== undefined) qp.limit = params.limit;
+      if (params.offset !== undefined) qp.offset = params.offset;
+      const r = await this.axiosInstance.get('/funnels/page', { params: qp });
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /funnels/page/count */
+  async countFunnelPages(params: { locationId?: string; funnelId?: string; name?: string } = {}): Promise<GHLApiResponse<any>> {
+    try {
+      const qp: any = {};
+      if (params.locationId) qp.locationId = params.locationId;
+      if (params.funnelId) qp.funnelId = params.funnelId;
+      if (params.name) qp.name = params.name;
+      const r = await this.axiosInstance.get('/funnels/page/count', { params: qp });
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  // ============================================================================
+  // LINKS API METHODS
+  // ============================================================================
+
+  /** GET /links/ */
+  async listLinks(locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId } as any;
+      const r = await this.axiosInstance.get('/links/', { params });
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** POST /links/ */
+  async createLink(linkData: any): Promise<GHLApiResponse<any>> {
+    try {
+      const r = await this.axiosInstance.post('/links/', linkData);
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /links/id/{linkId} */
+  async getLinkById(linkId: string, locationId?: string): Promise<GHLApiResponse<any>> {
+    try {
+      const params = { locationId: locationId || this.config.locationId } as any;
+      const r = await this.axiosInstance.get(`/links/id/${linkId}`, { params });
+      return this.wrapResponse(r.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** PUT /links/{linkId} */
+  async updateLink(linkId: string, updates: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.put(`/links/${linkId}`, updates); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** DELETE /links/{linkId} */
+  async deleteLink(linkId: string): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.delete(`/links/${linkId}`); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+
+  /** GET /links/search */
+  async searchLinks(params: { locationId?: string; query?: string; skip?: number; limit?: number }): Promise<GHLApiResponse<any>> {
+    try {
+      const qp: any = { locationId: params.locationId || this.config.locationId };
+      if (params.query) qp.query = params.query;
+      if (params.skip !== undefined) qp.skip = String(params.skip);
+      if (params.limit !== undefined) qp.limit = String(params.limit);
+      const r = await this.axiosInstance.get('/links/search', { params: qp });
+      return this.wrapResponse(r.data);
+    } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+
+  // ============================================================================
+  // MARKETPLACE API METHODS
+  // ============================================================================
+
+  /** POST /marketplace/billing/charges */
+  async createMarketplaceCharge(body: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.post('/marketplace/billing/charges', body); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  /** GET /marketplace/billing/charges */
+  async listMarketplaceCharges(params?: { meterId?: string; eventId?: string; userId?: string; startDate?: string; endDate?: string; skip?: number; limit?: number }): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.get('/marketplace/billing/charges', { params }); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  /** GET /marketplace/billing/charges/{chargeId} */
+  async getMarketplaceCharge(chargeId: string): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.get(`/marketplace/billing/charges/${chargeId}`); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  /** DELETE /marketplace/billing/charges/{chargeId} */
+  async deleteMarketplaceCharge(chargeId: string): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.delete(`/marketplace/billing/charges/${chargeId}`); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  /** GET /marketplace/billing/charges/has-funds */
+  async marketplaceHasFunds(): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.get('/marketplace/billing/charges/has-funds'); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  /** GET /marketplace/app/{appId}/installations */
+  async getMarketplaceAppInstallations(appId: string): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.get(`/marketplace/app/${appId}/installations`); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+  /** DELETE /marketplace/app/{appId}/installations */
+  async deleteMarketplaceAppInstallations(appId: string, body?: any): Promise<GHLApiResponse<any>> {
+    try { const r = await this.axiosInstance.delete(`/marketplace/app/${appId}/installations`, { data: body }); return this.wrapResponse(r.data); } catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>); }
+  }
+
+  // ============================================================================
+  // CUSTOM MENUS API METHODS
+  // ============================================================================
+  async listCustomMenus(params?: { locationId?: string; skip?: number; limit?: number; query?: string; showOnCompany?: boolean }): Promise<GHLApiResponse<any>> {
+    try { const qp: any = {}; if (params?.locationId) qp.locationId = params.locationId; if (params?.skip !== undefined) qp.skip = String(params.skip); if (params?.limit !== undefined) qp.limit = String(params.limit); if (params?.query) qp.query = params.query; if (params?.showOnCompany !== undefined) qp.showOnCompany = String(params.showOnCompany); const r = await this.axiosInstance.get('/custom-menus/', { params: qp }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async createCustomMenu(body: any): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.post('/custom-menus/', body); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async getCustomMenu(customMenuId: string): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.get(`/custom-menus/${customMenuId}`); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async updateCustomMenu(customMenuId: string, body: any): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.put(`/custom-menus/${customMenuId}`, body); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async deleteCustomMenu(customMenuId: string): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.delete(`/custom-menus/${customMenuId}`); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+
+  // ============================================================================
+  // SNAPSHOTS API METHODS
+  // ============================================================================
+  async listSnapshots(companyId: string): Promise<GHLApiResponse<any>> { try { const params = { companyId }; const r = await this.axiosInstance.get('/snapshots/', { params }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async shareSnapshotLink(companyId: string, body: any): Promise<GHLApiResponse<any>> { try { const params = { companyId }; const r = await this.axiosInstance.post('/snapshots/share/link', body, { params }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async getSnapshotStatus(snapshotId: string, companyId: string, from?: string, to?: string, lastDoc?: string, limit?: number): Promise<GHLApiResponse<any>> { try { const params: any = { companyId }; if (from) params.from = from; if (to) params.to = to; if (lastDoc) params.lastDoc = lastDoc; if (limit !== undefined) params.limit = limit; const r = await this.axiosInstance.get(`/snapshots/snapshot-status/${snapshotId}`, { params }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async getSnapshotLocationStatus(snapshotId: string, locationId: string, companyId: string): Promise<GHLApiResponse<any>> { try { const params: any = { companyId }; const r = await this.axiosInstance.get(`/snapshots/snapshot-status/${snapshotId}/location/${locationId}`, { params }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+
+  // ============================================================================
+  // PROPOSALS API METHODS
+  // ============================================================================
+  async listProposalDocuments(params?: { locationId?: string; status?: string; paymentStatus?: string; limit?: number; skip?: number; query?: string; dateFrom?: string; dateTo?: string }): Promise<GHLApiResponse<any>> { try { const qp: any = {}; if (params?.locationId) qp.locationId = params.locationId; if (params?.status) qp.status = params.status; if (params?.paymentStatus) qp.paymentStatus = params.paymentStatus; if (params?.limit !== undefined) qp.limit = params.limit; if (params?.skip !== undefined) qp.skip = params.skip; if (params?.query) qp.query = params.query; if (params?.dateFrom) qp.dateFrom = params.dateFrom; if (params?.dateTo) qp.dateTo = params.dateTo; const r = await this.axiosInstance.get('/proposals/document', { params: qp }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async sendProposalDocument(body: any): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.post('/proposals/document/send', body); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async listProposalTemplates(params?: { locationId?: string; dateFrom?: string; dateTo?: string; type?: string; name?: string; isPublicDocument?: boolean; userId?: string; limit?: number; skip?: number }): Promise<GHLApiResponse<any>> { try { const qp: any = {}; if (params?.locationId) qp.locationId = params.locationId; if (params?.dateFrom) qp.dateFrom = params.dateFrom; if (params?.dateTo) qp.dateTo = params.dateTo; if (params?.type) qp.type = params.type; if (params?.name) qp.name = params.name; if (params?.isPublicDocument !== undefined) qp.isPublicDocument = params.isPublicDocument; if (params?.userId) qp.userId = params.userId; if (params?.limit !== undefined) qp.limit = params.limit; if (params?.skip !== undefined) qp.skip = params.skip; const r = await this.axiosInstance.get('/proposals/templates', { params: qp }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async sendProposalTemplate(body: any): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.post('/proposals/templates/send', body); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+
+  // ============================================================================
+  // FORMS API METHODS
+  // ============================================================================
+  async listForms(params?: { locationId?: string; skip?: number; limit?: number; type?: string }): Promise<GHLApiResponse<any>> { try { const qp: any = { locationId: params?.locationId || this.config.locationId }; if (params?.skip !== undefined) qp.skip = params.skip; if (params?.limit !== undefined) qp.limit = params.limit; if (params?.type) qp.type = params.type; const r = await this.axiosInstance.get('/forms/', { params: qp }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async listFormSubmissions(params?: { locationId?: string; page?: number; limit?: number; formId?: string; q?: string; startAt?: string; endAt?: string }): Promise<GHLApiResponse<any>> { try { const qp: any = { locationId: params?.locationId || this.config.locationId }; if (params?.page !== undefined) qp.page = params.page; if (params?.limit !== undefined) qp.limit = params.limit; if (params?.formId) qp.formId = params.formId; if (params?.q) qp.q = params.q; if (params?.startAt) qp.startAt = params.startAt; if (params?.endAt) qp.endAt = params.endAt; const r = await this.axiosInstance.get('/forms/submissions', { params: qp }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async uploadFormCustomFiles(contactId: string, locationId?: string, formData?: any): Promise<GHLApiResponse<any>> { try { const params: any = { contactId, locationId: locationId || this.config.locationId }; const r = await this.axiosInstance.post('/forms/upload-custom-files', formData || {}, { params, headers: { 'Content-Type': 'multipart/form-data' } }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+
+  // ============================================================================
+  // OAUTH API METHODS
+  // ============================================================================
+  async oauthToken(body: any): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.post('/oauth/token', body); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async oauthLocationToken(body: any): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.post('/oauth/locationToken', body); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async oauthInstalledLocations(params?: { skip?: number; limit?: number; query?: string; isInstalled?: boolean; companyId?: string; appId?: string; versionId?: string; onTrial?: boolean; planId?: string }): Promise<GHLApiResponse<any>> { try { const qp: any = {}; if (params?.skip !== undefined) qp.skip = params.skip; if (params?.limit !== undefined) qp.limit = params.limit; if (params?.query) qp.query = params.query; if (params?.isInstalled !== undefined) qp.isInstalled = params.isInstalled; if (params?.companyId) qp.companyId = params.companyId; if (params?.appId) qp.appId = params.appId; if (params?.versionId) qp.versionId = params.versionId; if (params?.onTrial !== undefined) qp.onTrial = params.onTrial; if (params?.planId) qp.planId = params.planId; const r = await this.axiosInstance.get('/oauth/installedLocations', { params: qp }); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+
+  // ============================================================================
+  // CAMPAIGNS, COMPANIES, COURSES (singletons)
+  // ============================================================================
+  async listCampaigns(): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.get('/campaigns/'); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async getCompany(companyId: string): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.get(`/companies/${companyId}`); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async importCoursesPublic(body: any): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.post('/courses/courses-exporter/public/import', body); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+
+  // ============================================================================
+  // PHONE SYSTEM API METHODS
+  // ============================================================================
+  async getPhoneNumberPools(): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.get('/phone-system/number-pools'); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
+  async getPhoneNumbersByLocation(locationId: string): Promise<GHLApiResponse<any>> { try { const r = await this.axiosInstance.get(`/phone-system/numbers/location/${locationId}`); return this.wrapResponse(r.data);} catch (e) { return this.handleApiError(e as AxiosError<GHLErrorResponse>);} }
 
   async startSocialOAuth(platform: GHLSocialPlatform, userId: string, page?: string, reconnect?: boolean): Promise<GHLApiResponse<GHLOAuthStartResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const params: any = { locationId, userId };
+      if (page) params.page = page;
+      if (reconnect !== undefined) params.reconnect = String(reconnect);
+      const response: AxiosResponse<GHLOAuthStartResponse> = await this.axiosInstance.get(
+        `/social-media-posting/oauth/${platform}/start`,
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Explicit OAuth start endpoints per platform (spec-exact paths)
+   */
+  async startGoogleOAuth(userId: string, page?: string, reconnect?: boolean): Promise<GHLApiResponse<GHLOAuthStartResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const params: any = { locationId, userId };
+      if (page) params.page = page;
+      if (reconnect !== undefined) params.reconnect = String(reconnect);
+      const response: AxiosResponse<GHLOAuthStartResponse> = await this.axiosInstance.get(
+        '/social-media-posting/oauth/google/start',
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  async startFacebookOAuth(userId: string, page?: string, reconnect?: boolean): Promise<GHLApiResponse<GHLOAuthStartResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const params: any = { locationId, userId };
+      if (page) params.page = page;
+      if (reconnect !== undefined) params.reconnect = String(reconnect);
+      const response: AxiosResponse<GHLOAuthStartResponse> = await this.axiosInstance.get(
+        '/social-media-posting/oauth/facebook/start',
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  async startInstagramOAuth(userId: string, page?: string, reconnect?: boolean): Promise<GHLApiResponse<GHLOAuthStartResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const params: any = { locationId, userId };
+      if (page) params.page = page;
+      if (reconnect !== undefined) params.reconnect = String(reconnect);
+      const response: AxiosResponse<GHLOAuthStartResponse> = await this.axiosInstance.get(
+        '/social-media-posting/oauth/instagram/start',
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  async startLinkedInOAuth(userId: string, page?: string, reconnect?: boolean): Promise<GHLApiResponse<GHLOAuthStartResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const params: any = { locationId, userId };
+      if (page) params.page = page;
+      if (reconnect !== undefined) params.reconnect = String(reconnect);
+      const response: AxiosResponse<GHLOAuthStartResponse> = await this.axiosInstance.get(
+        '/social-media-posting/oauth/linkedin/start',
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  async startTwitterOAuth(userId: string, page?: string, reconnect?: boolean): Promise<GHLApiResponse<GHLOAuthStartResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const params: any = { locationId, userId };
+      if (page) params.page = page;
+      if (reconnect !== undefined) params.reconnect = String(reconnect);
+      const response: AxiosResponse<GHLOAuthStartResponse> = await this.axiosInstance.get(
+        '/social-media-posting/oauth/twitter/start',
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  async startTikTokOAuth(userId: string, page?: string, reconnect?: boolean): Promise<GHLApiResponse<GHLOAuthStartResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const params: any = { locationId, userId };
+      if (page) params.page = page;
+      if (reconnect !== undefined) params.reconnect = String(reconnect);
+      const response: AxiosResponse<GHLOAuthStartResponse> = await this.axiosInstance.get(
+        '/social-media-posting/oauth/tiktok/start',
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
+  }
+
+  async startTikTokBusinessOAuth(userId: string, page?: string, reconnect?: boolean): Promise<GHLApiResponse<GHLOAuthStartResponse>> {
+    try {
+      const locationId = this.config.locationId;
+      const params: any = { locationId, userId };
+      if (page) params.page = page;
+      if (reconnect !== undefined) params.reconnect = String(reconnect);
+      const response: AxiosResponse<GHLOAuthStartResponse> = await this.axiosInstance.get(
+        '/social-media-posting/oauth/tiktok-business/start',
+        { params }
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
   }
 
   async getGoogleBusinessLocations(accountId: string): Promise<GHLApiResponse<GHLGetGoogleLocationsResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLGetGoogleLocationsResponse> = await this.axiosInstance.get(
+        `/social-media-posting/oauth/${locationId}/google/locations/${accountId}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async setGoogleBusinessLocations(accountId: string, locationData: GHLAttachGMBLocationRequest): Promise<GHLApiResponse<GHLSocialAccount>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLSocialAccount> = await this.axiosInstance.post(
+        `/social-media-posting/oauth/${locationId}/google/locations/${accountId}`,
+        locationData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async getFacebookPages(accountId: string): Promise<GHLApiResponse<GHLGetFacebookPagesResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLGetFacebookPagesResponse> = await this.axiosInstance.get(
+        `/social-media-posting/oauth/${locationId}/facebook/accounts/${accountId}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async attachFacebookPages(accountId: string, pageData: GHLAttachFBAccountRequest): Promise<GHLApiResponse<GHLSocialAccount>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLSocialAccount> = await this.axiosInstance.post(
+        `/social-media-posting/oauth/${locationId}/facebook/accounts/${accountId}`,
+        pageData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async getInstagramAccounts(accountId: string): Promise<GHLApiResponse<GHLGetInstagramAccountsResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLGetInstagramAccountsResponse> = await this.axiosInstance.get(
+        `/social-media-posting/oauth/${locationId}/instagram/accounts/${accountId}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async attachInstagramAccounts(accountId: string, accountData: GHLAttachIGAccountRequest): Promise<GHLApiResponse<GHLSocialAccount>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLSocialAccount> = await this.axiosInstance.post(
+        `/social-media-posting/oauth/${locationId}/instagram/accounts/${accountId}`,
+        accountData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async getLinkedInAccounts(accountId: string): Promise<GHLApiResponse<GHLGetLinkedInAccountsResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLGetLinkedInAccountsResponse> = await this.axiosInstance.get(
+        `/social-media-posting/oauth/${locationId}/linkedin/accounts/${accountId}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async attachLinkedInAccounts(accountId: string, accountData: GHLAttachLinkedInAccountRequest): Promise<GHLApiResponse<GHLSocialAccount>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLSocialAccount> = await this.axiosInstance.post(
+        `/social-media-posting/oauth/${locationId}/linkedin/accounts/${accountId}`,
+        accountData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async getTwitterProfile(accountId: string): Promise<GHLApiResponse<GHLGetTwitterAccountsResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLGetTwitterAccountsResponse> = await this.axiosInstance.get(
+        `/social-media-posting/oauth/${locationId}/twitter/accounts/${accountId}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async attachTwitterProfile(accountId: string, profileData: GHLAttachTwitterAccountRequest): Promise<GHLApiResponse<GHLSocialAccount>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLSocialAccount> = await this.axiosInstance.post(
+        `/social-media-posting/oauth/${locationId}/twitter/accounts/${accountId}`,
+        profileData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async getTikTokProfile(accountId: string): Promise<GHLApiResponse<GHLGetTikTokAccountsResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLGetTikTokAccountsResponse> = await this.axiosInstance.get(
+        `/social-media-posting/oauth/${locationId}/tiktok/accounts/${accountId}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async attachTikTokProfile(accountId: string, profileData: GHLAttachTikTokAccountRequest): Promise<GHLApiResponse<GHLSocialAccount>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLSocialAccount> = await this.axiosInstance.post(
+        `/social-media-posting/oauth/${locationId}/tiktok/accounts/${accountId}`,
+        profileData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   async getTikTokBusinessProfile(accountId: string): Promise<GHLApiResponse<GHLGetTikTokAccountsResponse>> {
-    throw new Error('Method not yet implemented');
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLGetTikTokAccountsResponse> = await this.axiosInstance.get(
+        `/social-media-posting/oauth/${locationId}/tiktok-business/accounts/${accountId}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
   }
 
   // ===== MISSING CALENDAR GROUPS MANAGEMENT METHODS =====
@@ -3299,7 +4657,66 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Create block slot
+   * POST /calendars/events/block-slots
+   */
+  async createBlockSlot(blockData: GHLCreateBlockSlotRequest): Promise<GHLApiResponse<GHLBlockSlotResponse>> {
+    try {
+      const payload = {
+        ...blockData,
+        locationId: (blockData as any).locationId || this.config.locationId
+      };
+
+      const response: AxiosResponse<GHLBlockSlotResponse> = await this.axiosInstance.post(
+        '/calendars/events/block-slots',
+        payload
+      );
+
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Delete calendar event
+   * DELETE /calendars/events/{eventId}
+   */
+  async deleteCalendarEvent(eventId: string): Promise<GHLApiResponse<{ succeeded?: boolean }>> {
+    try {
+      const response: AxiosResponse<{ succeeded?: boolean }> = await this.axiosInstance.delete(
+        `/calendars/events/${eventId}`
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  /**
+   * Validate calendar group slug (spec-compliant)
+   * POST /calendars/groups/validate-slug
+   */
+  async validateCalendarGroupSlugPost(slug: string, locationId?: string): Promise<GHLApiResponse<GHLValidateGroupSlugResponse>> {
+    try {
+      const payload = {
+        slug,
+        locationId: locationId || this.config.locationId
+      };
+
+      const response: AxiosResponse<GHLValidateGroupSlugResponse> = await this.axiosInstance.post(
+        '/calendars/groups/validate-slug',
+        payload
+      );
+
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3316,7 +4733,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3332,7 +4749,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3344,14 +4761,14 @@ export class GHLApiClient {
     try {
       const payload: GHLGroupStatusUpdateRequest = { isActive };
 
-      const response: AxiosResponse<GHLGroupSuccessResponse> = await this.axiosInstance.post(
+      const response: AxiosResponse<GHLGroupSuccessResponse> = await this.axiosInstance.put(
         `/calendars/groups/${groupId}/status`,
         payload
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3359,70 +4776,70 @@ export class GHLApiClient {
 
   /**
    * Get appointment notes
-   * GET /calendars/events/appointments/{appointmentId}/notes
+   * GET /calendars/appointments/{appointmentId}/notes
    */
   async getAppointmentNotes(appointmentId: string, limit = 10, offset = 0): Promise<GHLApiResponse<GHLGetAppointmentNotesResponse>> {
     try {
       const params = { limit, offset };
 
       const response: AxiosResponse<GHLGetAppointmentNotesResponse> = await this.axiosInstance.get(
-        `/calendars/events/appointments/${appointmentId}/notes`,
+        `/calendars/appointments/${appointmentId}/notes`,
         { params }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Create appointment note
-   * POST /calendars/events/appointments/{appointmentId}/notes
+   * POST /calendars/appointments/{appointmentId}/notes
    */
   async createAppointmentNote(appointmentId: string, noteData: GHLCreateAppointmentNoteRequest): Promise<GHLApiResponse<GHLAppointmentNoteResponse>> {
     try {
       const response: AxiosResponse<GHLAppointmentNoteResponse> = await this.axiosInstance.post(
-        `/calendars/events/appointments/${appointmentId}/notes`,
+        `/calendars/appointments/${appointmentId}/notes`,
         noteData
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Update appointment note
-   * PUT /calendars/events/appointments/{appointmentId}/notes/{noteId}
+   * PUT /calendars/appointments/{appointmentId}/notes/{noteId}
    */
   async updateAppointmentNote(appointmentId: string, noteId: string, updateData: GHLUpdateAppointmentNoteRequest): Promise<GHLApiResponse<GHLAppointmentNoteResponse>> {
     try {
       const response: AxiosResponse<GHLAppointmentNoteResponse> = await this.axiosInstance.put(
-        `/calendars/events/appointments/${appointmentId}/notes/${noteId}`,
+        `/calendars/appointments/${appointmentId}/notes/${noteId}`,
         updateData
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
   /**
    * Delete appointment note
-   * DELETE /calendars/events/appointments/{appointmentId}/notes/{noteId}
+   * DELETE /calendars/appointments/{appointmentId}/notes/{noteId}
    */
   async deleteAppointmentNote(appointmentId: string, noteId: string): Promise<GHLApiResponse<GHLDeleteAppointmentNoteResponse>> {
     try {
       const response: AxiosResponse<GHLDeleteAppointmentNoteResponse> = await this.axiosInstance.delete(
-        `/calendars/events/appointments/${appointmentId}/notes/${noteId}`
+        `/calendars/appointments/${appointmentId}/notes/${noteId}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3447,7 +4864,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3469,7 +4886,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3477,15 +4894,15 @@ export class GHLApiClient {
    * Get calendar resource by ID
    * GET /calendars/resources/{resourceType}/{resourceId}
    */
-  async getCalendarResource(resourceType: 'equipments' | 'rooms', resourceId: string): Promise<GHLApiResponse<GHLCalendarResourceByIdResponse>> {
+  async getCalendarResource(resourceType: 'equipments' | 'rooms', id: string): Promise<GHLApiResponse<GHLCalendarResourceByIdResponse>> {
     try {
       const response: AxiosResponse<GHLCalendarResourceByIdResponse> = await this.axiosInstance.get(
-        `/calendars/resources/${resourceType}/${resourceId}`
+        `/calendars/resources/${resourceType}/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3493,16 +4910,16 @@ export class GHLApiClient {
    * Update calendar resource
    * PUT /calendars/resources/{resourceType}/{resourceId}
    */
-  async updateCalendarResource(resourceType: 'equipments' | 'rooms', resourceId: string, updateData: GHLUpdateCalendarResourceRequest): Promise<GHLApiResponse<GHLCalendarResourceResponse>> {
+  async updateCalendarResource(resourceType: 'equipments' | 'rooms', id: string, updateData: GHLUpdateCalendarResourceRequest): Promise<GHLApiResponse<GHLCalendarResourceResponse>> {
     try {
       const response: AxiosResponse<GHLCalendarResourceResponse> = await this.axiosInstance.put(
-        `/calendars/resources/${resourceType}/${resourceId}`,
+        `/calendars/resources/${resourceType}/${id}`,
         updateData
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3510,15 +4927,15 @@ export class GHLApiClient {
    * Delete calendar resource
    * DELETE /calendars/resources/{resourceType}/{resourceId}
    */
-  async deleteCalendarResource(resourceType: 'equipments' | 'rooms', resourceId: string): Promise<GHLApiResponse<GHLResourceDeleteResponse>> {
+  async deleteCalendarResource(resourceType: 'equipments' | 'rooms', id: string): Promise<GHLApiResponse<GHLResourceDeleteResponse>> {
     try {
       const response: AxiosResponse<GHLResourceDeleteResponse> = await this.axiosInstance.delete(
-        `/calendars/resources/${resourceType}/${resourceId}`
+        `/calendars/resources/${resourceType}/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3541,7 +4958,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3560,7 +4977,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3576,7 +4993,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3593,7 +5010,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3609,7 +5026,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3634,31 +5051,10 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
-  /**
-   * Create a new block slot
-   * POST /calendars/blocked-slots
-   */
-  async createBlockSlot(blockSlotData: GHLCreateBlockSlotRequest): Promise<GHLApiResponse<GHLBlockSlotResponse>> {
-    try {
-      const payload = {
-        ...blockSlotData,
-        locationId: blockSlotData.locationId || this.config.locationId
-      };
-
-      const response: AxiosResponse<GHLBlockSlotResponse> = await this.axiosInstance.post(
-        '/calendars/blocked-slots',
-        payload
-      );
-
-      return this.wrapResponse(response.data);
-    } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
-    }
-  }
 
   // ===== MEDIA LIBRARY API METHODS =====
 
@@ -3686,7 +5082,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3729,7 +5125,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3744,13 +5140,14 @@ export class GHLApiClient {
         altId: deleteParams.altId
       });
 
+      const { id } = deleteParams;
       const response: AxiosResponse<GHLDeleteMediaResponse> = await this.axiosInstance.delete(
-        `/medias/${deleteParams.id}?${queryParams}`
+        `/medias/${id}?${queryParams}`
       );
 
       return this.wrapResponse({ success: true, message: 'Media file deleted successfully' });
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3773,7 +5170,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3795,7 +5192,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3805,19 +5202,20 @@ export class GHLApiClient {
    */
   async getObjectSchema(params: GHLGetObjectSchemaRequest): Promise<GHLApiResponse<GHLGetObjectSchemaResponse>> {
     try {
+      const { key, locationId, fetchProperties } = params as any;
       const queryParams = {
-        locationId: params.locationId || this.config.locationId,
-        ...(params.fetchProperties !== undefined && { fetchProperties: params.fetchProperties.toString() })
+        locationId: locationId || this.config.locationId,
+        ...(fetchProperties !== undefined && { fetchProperties: String(fetchProperties) })
       };
 
       const response: AxiosResponse<GHLGetObjectSchemaResponse> = await this.axiosInstance.get(
-        `/objects/${params.key}`,
+        `/objects/${key}`,
         { params: queryParams }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3839,7 +5237,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3861,7 +5259,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3869,15 +5267,15 @@ export class GHLApiClient {
    * Get object record by id
    * GET /objects/{schemaKey}/records/{id}
    */
-  async getObjectRecord(schemaKey: string, recordId: string): Promise<GHLApiResponse<GHLObjectRecordResponse>> {
+  async getObjectRecord(schemaKey: string, id: string): Promise<GHLApiResponse<GHLObjectRecordResponse>> {
     try {
       const response: AxiosResponse<GHLObjectRecordResponse> = await this.axiosInstance.get(
-        `/objects/${schemaKey}/records/${recordId}`
+        `/objects/${schemaKey}/records/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3885,21 +5283,21 @@ export class GHLApiClient {
    * Update object record
    * PUT /objects/{schemaKey}/records/{id}
    */
-  async updateObjectRecord(schemaKey: string, recordId: string, updateData: GHLUpdateObjectRecordRequest): Promise<GHLApiResponse<GHLObjectRecordResponse>> {
+  async updateObjectRecord(schemaKey: string, id: string, updateData: GHLUpdateObjectRecordRequest): Promise<GHLApiResponse<GHLObjectRecordResponse>> {
     try {
       const queryParams = {
         locationId: updateData.locationId || this.config.locationId
       };
 
       const response: AxiosResponse<GHLObjectRecordResponse> = await this.axiosInstance.put(
-        `/objects/${schemaKey}/records/${recordId}`,
+        `/objects/${schemaKey}/records/${id}`,
         updateData,
         { params: queryParams }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3907,15 +5305,15 @@ export class GHLApiClient {
    * Delete object record
    * DELETE /objects/{schemaKey}/records/{id}
    */
-  async deleteObjectRecord(schemaKey: string, recordId: string): Promise<GHLApiResponse<GHLObjectRecordDeleteResponse>> {
+  async deleteObjectRecord(schemaKey: string, id: string): Promise<GHLApiResponse<GHLObjectRecordDeleteResponse>> {
     try {
       const response: AxiosResponse<GHLObjectRecordDeleteResponse> = await this.axiosInstance.delete(
-        `/objects/${schemaKey}/records/${recordId}`
+        `/objects/${schemaKey}/records/${id}`
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3937,7 +5335,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3962,7 +5360,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -3984,7 +5382,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4000,7 +5398,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4017,7 +5415,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4033,7 +5431,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4043,18 +5441,19 @@ export class GHLApiClient {
    */
   async getAssociationByKey(params: GHLGetAssociationByKeyRequest): Promise<GHLApiResponse<GHLAssociationResponse>> {
     try {
+      const { keyName: key_name, locationId } = params as any;
       const queryParams = {
-        locationId: params.locationId || this.config.locationId
+        locationId: locationId || this.config.locationId
       };
 
       const response: AxiosResponse<GHLAssociationResponse> = await this.axiosInstance.get(
-        `/associations/key/${params.keyName}`,
+        `/associations/key/${key_name}`,
         { params: queryParams }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4064,18 +5463,17 @@ export class GHLApiClient {
    */
   async getAssociationByObjectKey(params: GHLGetAssociationByObjectKeyRequest): Promise<GHLApiResponse<GHLAssociationResponse>> {
     try {
-      const queryParams = params.locationId ? {
-        locationId: params.locationId
-      } : {};
+      const { objectKey, locationId } = params as any;
+      const queryParams = locationId ? { locationId } : {};
 
       const response: AxiosResponse<GHLAssociationResponse> = await this.axiosInstance.get(
-        `/associations/objectKey/${params.objectKey}`,
+        `/associations/objectKey/${objectKey}`,
         { params: queryParams }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4097,7 +5495,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4107,21 +5505,22 @@ export class GHLApiClient {
    */
   async getRelationsByRecord(params: GHLGetRelationsByRecordRequest): Promise<GHLApiResponse<GHLGetRelationsResponse>> {
     try {
+      const { recordId, locationId, skip, limit, associationIds } = params as any;
       const queryParams = {
-        locationId: params.locationId || this.config.locationId,
-        skip: params.skip.toString(),
-        limit: params.limit.toString(),
-        ...(params.associationIds && { associationIds: params.associationIds })
+        locationId: locationId || this.config.locationId,
+        skip: String(skip),
+        limit: String(limit),
+        ...(associationIds && { associationIds })
       };
 
       const response: AxiosResponse<GHLGetRelationsResponse> = await this.axiosInstance.get(
-        `/associations/relations/${params.recordId}`,
+        `/associations/relations/${recordId}`,
         { params: queryParams }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4131,18 +5530,19 @@ export class GHLApiClient {
    */
   async deleteRelation(params: GHLDeleteRelationRequest): Promise<GHLApiResponse<GHLAssociationResponse>> {
     try {
+      const { relationId, locationId } = params as any;
       const queryParams = {
-        locationId: params.locationId || this.config.locationId
+        locationId: locationId || this.config.locationId
       };
 
       const response: AxiosResponse<GHLAssociationResponse> = await this.axiosInstance.delete(
-        `/associations/relations/${params.relationId}`,
+        `/associations/relations/${relationId}`,
         { params: queryParams }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4160,7 +5560,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4182,7 +5582,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4204,7 +5604,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4220,7 +5620,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4230,18 +5630,19 @@ export class GHLApiClient {
    */
   async getCustomFieldsV2ByObjectKey(params: GHLV2GetCustomFieldsByObjectKeyRequest): Promise<GHLApiResponse<GHLV2CustomFieldsResponse>> {
     try {
+      const { objectKey, locationId } = params;
       const queryParams = {
-        locationId: params.locationId || this.config.locationId
+        locationId: locationId || this.config.locationId
       };
 
       const response: AxiosResponse<GHLV2CustomFieldsResponse> = await this.axiosInstance.get(
-        `/custom-fields/object-key/${params.objectKey}`,
+        `/custom-fields/object-key/${objectKey}`,
         { params: queryParams }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4263,7 +5664,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4285,7 +5686,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4295,18 +5696,19 @@ export class GHLApiClient {
    */
   async deleteCustomFieldV2Folder(params: GHLV2DeleteCustomFieldFolderRequest): Promise<GHLApiResponse<GHLV2DeleteCustomFieldResponse>> {
     try {
+      const { id, locationId } = params;
       const queryParams = {
-        locationId: params.locationId || this.config.locationId
+        locationId: locationId || this.config.locationId
       };
 
       const response: AxiosResponse<GHLV2DeleteCustomFieldResponse> = await this.axiosInstance.delete(
-        `/custom-fields/folder/${params.id}`,
+        `/custom-fields/folder/${id}`,
         { params: queryParams }
       );
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4329,7 +5731,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4362,7 +5764,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw this.handleApiError(error as AxiosError<GHLErrorResponse>);
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4371,6 +5773,38 @@ export class GHLApiClient {
    * GET /surveys/submissions
    */
   async getSurveySubmissions(request: GHLGetSurveySubmissionsRequest): Promise<GHLApiResponse<GHLGetSurveySubmissionsResponse>> {
+    try {
+      const locationId = request.locationId || this.config.locationId;
+      
+      const params = new URLSearchParams();
+      params.append('locationId', locationId); // Canonical: locationId as query param
+      if (request.page) params.append('page', request.page.toString());
+      if (request.limit) params.append('limit', request.limit.toString());
+      if (request.surveyId) params.append('surveyId', request.surveyId);
+      if (request.q) params.append('q', request.q);
+      if (request.startAt) params.append('startAt', request.startAt);
+      if (request.endAt) params.append('endAt', request.endAt);
+
+      const response: AxiosResponse<GHLGetSurveySubmissionsResponse> = await this.axiosInstance.get(
+        `/surveys/submissions?${params.toString()}`,
+        {
+          headers: {
+            'Authorization': this.axiosInstance.defaults.headers['Authorization'],
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Version': '2021-07-28' // Canonical version header
+          }
+        }
+      );
+
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
+  // Keep legacy location-scoped method for backward compatibility
+  async getSurveySubmissionsLegacy(request: GHLGetSurveySubmissionsRequest): Promise<GHLApiResponse<GHLGetSurveySubmissionsResponse>> {
     try {
       const locationId = request.locationId || this.config.locationId;
       
@@ -4388,7 +5822,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4417,7 +5851,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4443,7 +5877,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4467,7 +5901,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4490,7 +5924,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4512,7 +5946,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4539,7 +5973,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4562,7 +5996,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4587,7 +6021,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4609,7 +6043,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4632,7 +6066,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4654,7 +6088,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4681,7 +6115,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4703,7 +6137,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4725,7 +6159,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4748,7 +6182,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4770,7 +6204,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4797,7 +6231,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4819,7 +6253,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4840,7 +6274,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4857,7 +6291,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4877,7 +6311,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4909,7 +6343,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4929,7 +6363,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4952,7 +6386,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4974,7 +6408,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -4996,7 +6430,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5016,7 +6450,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5040,7 +6474,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5060,7 +6494,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5085,7 +6519,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5108,7 +6542,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5132,7 +6566,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5149,7 +6583,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5172,7 +6606,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5195,7 +6629,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5211,7 +6645,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5237,7 +6671,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5258,7 +6692,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5289,7 +6723,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5316,7 +6750,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5339,7 +6773,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5361,7 +6795,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5384,7 +6818,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5405,7 +6839,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5428,7 +6862,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5451,7 +6885,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5474,7 +6908,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5491,7 +6925,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5514,7 +6948,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5537,7 +6971,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5560,7 +6994,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5583,7 +7017,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5606,7 +7040,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5629,7 +7063,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5646,7 +7080,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5663,7 +7097,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5680,7 +7114,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5703,7 +7137,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5722,7 +7156,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5740,7 +7174,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5758,7 +7192,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5777,7 +7211,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5796,7 +7230,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5823,7 +7257,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5862,7 +7296,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5887,7 +7321,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5910,7 +7344,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5935,7 +7369,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5958,7 +7392,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -5981,7 +7415,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6004,7 +7438,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6043,7 +7477,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6068,7 +7502,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6091,7 +7525,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6116,7 +7550,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6132,7 +7566,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6155,7 +7589,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6178,7 +7612,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6201,7 +7635,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6224,7 +7658,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6249,7 +7683,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6274,7 +7708,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6297,7 +7731,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6322,7 +7756,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6345,7 +7779,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6368,7 +7802,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6391,7 +7825,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6414,7 +7848,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6431,7 +7865,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6454,7 +7888,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6477,7 +7911,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6500,7 +7934,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6525,7 +7959,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6548,7 +7982,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6571,7 +8005,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6610,7 +8044,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6627,7 +8061,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6658,7 +8092,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6681,7 +8115,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6704,7 +8138,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6727,7 +8161,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6754,7 +8188,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6777,7 +8211,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 
@@ -6822,7 +8256,7 @@ export class GHLApiClient {
 
       return this.wrapResponse(response.data);
     } catch (error) {
-      throw error;
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
   }
 } 

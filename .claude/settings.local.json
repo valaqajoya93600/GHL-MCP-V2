@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:marketplace.gohighlevel.com)",
+      "Bash(node:*)",
+      "Bash(npm run generate-qa-report:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test)",
+      "Bash(npx jest:*)",
+      "Bash(npm install)",
+      "Bash(npm test:*)",
+      "Bash(timeout 30 npm test:*)",
+      "Bash(npx tsc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

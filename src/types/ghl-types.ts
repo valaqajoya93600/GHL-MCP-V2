@@ -409,6 +409,30 @@ export interface GHLBulkBusinessResponse {
   ids: string[];
 }
 
+// Bulk Tags Update Request
+export interface GHLBulkTagsUpdateRequest {
+  ids: string[];
+  tags: string[];
+}
+
+// Bulk Business Update Request
+export interface GHLBulkBusinessUpdateRequest {
+  ids: string[];
+  businessId?: string | null;
+}
+
+// Get Contacts Response
+export interface GHLGetContactsResponse {
+  contacts: GHLContact[];
+  count: number;
+  totalCount: number;
+  aggregations?: any;
+  meta?: {
+    startAfterId?: string;
+    startAfter?: string;
+  };
+}
+
 // Followers Response  
 export interface GHLFollowersResponse {
   followers: string[];

@@ -11,6 +11,11 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Ignore all other env variants, but keep examples tracked
+.env.*
+!.env.example
+!.env.*.example
+
 # MCP Configuration with credentials
 cursor-mcp-config.json
 
