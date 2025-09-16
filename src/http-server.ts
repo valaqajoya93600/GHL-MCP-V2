@@ -7,6 +7,8 @@ import express from 'express';
 import cors from 'cors';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { randomUUID } from 'crypto';
 import { 
   CallToolRequestSchema,
   ErrorCode,
@@ -66,6 +68,7 @@ class GHLMCPHttpServer {
   private voiceAITools: VoiceAITools;
   private port: number;
   private sseTransports: Map<string, SSEServerTransport> = new Map();
+  private streamableTransports: Map<string, StreamableHTTPServerTransport> = new Map();
 
   constructor() {
     this.port = parseInt(process.env.PORT || process.env.MCP_SERVER_PORT || '8000');
@@ -313,6 +316,8 @@ class GHLMCPHttpServer {
    * Setup HTTP routes
    */
   private setupRoutes(): void {
+    // JSON body parser for Streamable HTTP POSTs
+    this.app.use(express.json({ limit: '2mb' }));
     // Health check endpoint
     this.app.get('/health', (req, res) => {
       res.json({ 
@@ -367,7 +372,51 @@ class GHLMCPHttpServer {
       }
     });
 
-    // SSE endpoint for ChatGPT MCP connection
+    // Streamable HTTP endpoint for modern MCP clients (ChatGPT, etc.)
+    this.app.all('/mcp', async (req, res) => {
+      try {
+        // Reuse existing transport for known sessions; create a new one otherwise
+        // The transport will attach a session header in the first response; clients should replay it in subsequent requests.
+        // We let the transport validate session IDs.
+        let transport: StreamableHTTPServerTransport | undefined;
+
+        // Try to find an existing transport by session header
+        const sidHeader = (req.headers['x-session-id'] || req.headers['x-mcp-session-id'] || req.headers['mcp-session-id']) as string | undefined;
+        if (sidHeader) {
+          transport = this.streamableTransports.get(sidHeader);
+        }
+
+        if (!transport) {
+          transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => randomUUID(),
+            onsessioninitialized: (sid: string) => {
+              this.streamableTransports.set(sid, transport!);
+              console.log(`[GHL MCP HTTP] Streamable HTTP session initialized: ${sid}`);
+            },
+          });
+          await this.server.connect(transport);
+        }
+
+        await transport.handleRequest(req as any, res as any, (req as any).body);
+
+        // Clean up on close
+        transport.onclose = () => {
+          if (transport?.sessionId) {
+            this.streamableTransports.delete(transport.sessionId);
+            console.log(`[GHL MCP HTTP] Streamable HTTP session closed: ${transport.sessionId}`);
+          }
+        };
+      } catch (error) {
+        console.error('[GHL MCP HTTP] Streamable HTTP error:', error);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Streamable HTTP handling failed' });
+        } else {
+          res.end();
+        }
+      }
+    });
+
+    // SSE endpoint for legacy MCP clients
     // Handle GET to establish SSE stream
     this.app.get('/sse', async (req, res) => {
       try {

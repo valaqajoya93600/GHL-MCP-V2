@@ -20,6 +20,7 @@
     "start": "node dist/http-server.js",
     "start:stdio": "node dist/server.js",
     "start:http": "node dist/http-server.js",
+    "test:mcp:sse": "node scripts/test-mcp-sse.mjs",
     "vercel-build": "npm run build",
     "prepublishOnly": "npm run build",
     "test": "jest",
