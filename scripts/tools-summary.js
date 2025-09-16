@@ -28,7 +28,7 @@ function extractToolNamesFromFile(file){
 function extractServerAllowlists(){
   const src = fs.readFileSync(SERVER_FILE, 'utf8');
   const blocks = {};
-  const reBlock = /private\s+is([A-Za-z0-9]+)Tool\(toolName: string\): boolean\s*{[\s\S]*?const\s+[a-zA-Z]+\s*=\s*\[([\s\S]*?)\];[\s\S]*?return\s+[a-zA-Z]+\.includes\(toolName\);[\s\S]*?}/g;
+  const reBlock = /private\s+is([A-Za-z0-9]+)Tool\(toolName: string\): boolean\s*{[\s\S]*?const\s+[a-zA-Z0-9_]+\s*=\s*\[([\s\S]*?)\];[\s\S]*?return\s+[a-zA-Z0-9_]+\.includes\(toolName\);[\s\S]*?}/g;
   let m;
   while((m=reBlock.exec(src))!==null){
     const family = m[1];

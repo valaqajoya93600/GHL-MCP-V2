@@ -130,25 +130,46 @@
   - get_email_templates
   - update_email_template
   - delete_email_template
-- invoices-tools.ts: 18 tools
+- invoices-tools.ts: 39 tools
   - create_invoice_template
   - list_invoice_templates
   - get_invoice_template
   - update_invoice_template
   - delete_invoice_template
+  - update_invoice_template_late_fees
+  - update_invoice_template_payment_methods
   - create_invoice_schedule
   - list_invoice_schedules
   - get_invoice_schedule
+  - update_invoice_schedule
+  - delete_invoice_schedule
+  - schedule_invoice_schedule
+  - auto_payment_invoice_schedule
+  - cancel_invoice_schedule
   - create_invoice
   - list_invoices
   - get_invoice
+  - update_invoice
+  - delete_invoice
+  - void_invoice
   - send_invoice
+  - record_invoice_payment
+  - text2pay_invoice
+  - update_invoice_last_visited
   - create_estimate
   - list_estimates
+  - update_estimate
+  - delete_estimate
   - send_estimate
   - create_invoice_from_estimate
+  - update_estimate_last_visited
   - generate_invoice_number
   - generate_estimate_number
+  - list_estimate_templates
+  - create_estimate_template
+  - update_estimate_template
+  - delete_estimate_template
+  - preview_estimate_template
 - location-tools.ts: 24 tools
   - search_locations
   - get_location
@@ -371,7 +392,7 @@
   - upsert_opportunity
   - add_opportunity_followers
   - remove_opportunity_followers
-- Calendar: 14 names
+- Calendar: 39 names
   - get_calendar_groups
   - get_calendars
   - create_calendar
@@ -386,6 +407,31 @@
   - delete_appointment
   - create_block_slot
   - update_block_slot
+  - create_calendar_group
+  - validate_group_slug
+  - update_calendar_group
+  - delete_calendar_group
+  - disable_calendar_group
+  - get_appointment_notes
+  - create_appointment_note
+  - update_appointment_note
+  - delete_appointment_note
+  - get_calendar_resources_equipments
+  - create_calendar_resource_equipment
+  - get_calendar_resource_equipment
+  - update_calendar_resource_equipment
+  - delete_calendar_resource_equipment
+  - get_calendar_resources_rooms
+  - create_calendar_resource_room
+  - get_calendar_resource_room
+  - update_calendar_resource_room
+  - delete_calendar_resource_room
+  - get_calendar_notifications
+  - create_calendar_notifications
+  - get_calendar_notification
+  - update_calendar_notification
+  - delete_calendar_notification
+  - get_blocked_slots
 - Email: 5 names
   - get_email_campaigns
   - create_email_template
@@ -462,7 +508,16 @@
   - ghl_create_relation
   - ghl_get_relations_by_record
   - ghl_delete_relation
-- CustomFieldV2: 1 names
+- CustomFieldV2: 8 names
+  - ghl_get_custom_field_by_id
+  - ghl_create_custom_field
+  - ghl_update_custom_field
+  - ghl_delete_custom_field
+  - ghl_get_custom_fields_by_object_key
+  - ghl_create_custom_field_folder
+  - ghl_update_custom_field_folder
+  - ghl_delete_custom_field_folder
+- Workflow: 1 names
   - ghl_get_workflows
 - Survey: 2 names
   - ghl_get_surveys
@@ -560,5 +615,3 @@
   - preview_estimate_template
 
 ## Coverage Checks
-- Missing tool definitions for Invoices: update_invoice_template_late_fees, update_invoice_template_payment_methods, update_invoice_schedule, delete_invoice_schedule, schedule_invoice_schedule, auto_payment_invoice_schedule, cancel_invoice_schedule, update_invoice, delete_invoice, void_invoice, record_invoice_payment, text2pay_invoice, update_invoice_last_visited, update_estimate, delete_estimate, update_estimate_last_visited, list_estimate_templates, create_estimate_template, update_estimate_template, delete_estimate_template, preview_estimate_template
-- Tools defined but not included in any allowlist: create_calendar_group, validate_group_slug, update_calendar_group, delete_calendar_group, disable_calendar_group, get_appointment_notes, create_appointment_note, update_appointment_note, delete_appointment_note, get_calendar_resources_equipments, create_calendar_resource_equipment, get_calendar_resource_equipment, update_calendar_resource_equipment, delete_calendar_resource_equipment, get_calendar_resources_rooms, create_calendar_resource_room, get_calendar_resource_room, update_calendar_resource_room, delete_calendar_resource_room, get_calendar_notifications, create_calendar_notifications, get_calendar_notification, update_calendar_notification, delete_calendar_notification, get_blocked_slots, ghl_get_custom_field_by_id, ghl_create_custom_field, ghl_update_custom_field, ghl_delete_custom_field, ghl_get_custom_fields_by_object_key, ghl_create_custom_field_folder, ghl_update_custom_field_folder, ghl_delete_custom_field_folder

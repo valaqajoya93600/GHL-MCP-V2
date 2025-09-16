@@ -398,12 +398,19 @@ class GHLMCPServer {
    */
   private isCalendarTool(toolName: string): boolean {
     const calendarToolNames = [
-      'get_calendar_groups', 'get_calendars', 'create_calendar', 'get_calendar', 'update_calendar', 
-      'delete_calendar', 'get_calendar_events', 'get_free_slots', 'create_appointment', 
-      'get_appointment', 'update_appointment', 'delete_appointment', 'create_block_slot', 'update_block_slot'
+      'get_calendar_groups', 'get_calendars', 'create_calendar', 'get_calendar', 'update_calendar', 'delete_calendar',
+      'get_calendar_events', 'get_free_slots', 'create_appointment', 'get_appointment', 'update_appointment', 'delete_appointment',
+      'create_block_slot', 'update_block_slot', 'create_calendar_group', 'validate_group_slug', 'update_calendar_group', 'delete_calendar_group',
+      'disable_calendar_group', 'get_appointment_notes', 'create_appointment_note', 'update_appointment_note', 'delete_appointment_note',
+      'get_calendar_resources_equipments', 'create_calendar_resource_equipment', 'get_calendar_resource_equipment',
+      'update_calendar_resource_equipment', 'delete_calendar_resource_equipment', 'get_calendar_resources_rooms',
+      'create_calendar_resource_room', 'get_calendar_resource_room', 'update_calendar_resource_room', 'delete_calendar_resource_room',
+      'get_calendar_notifications', 'create_calendar_notifications', 'get_calendar_notification', 'update_calendar_notification',
+      'delete_calendar_notification', 'get_blocked_slots'
     ];
     return calendarToolNames.includes(toolName);
   }
+
 
   /**
    * Check if tool name belongs to email tools

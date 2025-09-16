@@ -60,8 +60,9 @@ export class MediaTools {
             },
             type: { 
               type: 'string', 
-              description: 'Filter by type (file or folder)',
-              enum: ['file', 'folder']
+              description: 'Filter by type (file or folder). Defaults to file due to API requirement',
+              enum: ['file', 'folder'],
+              default: 'file'
             },
             query: { 
               type: 'string', 
@@ -182,9 +183,10 @@ export class MediaTools {
         sortOrder: params.sortOrder || 'desc',
         altType: params.altType || 'location',
         altId: params.altId || this.ghlClient.getConfig().locationId,
+        // GHL API requires a non-empty 'type' query param
+        type: params.type || 'file',
         ...(params.offset !== undefined && { offset: params.offset }),
         ...(params.limit !== undefined && { limit: params.limit }),
-        ...(params.type && { type: params.type }),
         ...(params.query && { query: params.query }),
         ...(params.parentId && { parentId: params.parentId })
       };
