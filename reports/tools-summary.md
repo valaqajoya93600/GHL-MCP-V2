@@ -252,7 +252,7 @@
   - ghl_list_inventory
   - ghl_create_product_collection
   - ghl_list_product_collections
-- social-media-tools.ts: 17 tools
+- social-media-tools.ts: 29 tools
   - search_social_posts
   - create_social_post
   - get_social_post
@@ -264,6 +264,18 @@
   - upload_social_csv
   - get_csv_upload_status
   - set_csv_accounts
+  - get_csv_posts
+  - finalize_social_csv
+  - delete_social_csv
+  - delete_csv_post
+  - attach_google_locations
+  - attach_facebook_pages
+  - attach_instagram_accounts
+  - attach_linkedin_accounts
+  - attach_twitter_profile
+  - attach_tiktok_profile
+  - attach_tiktok_business_profile
+  - get_social_statistics
   - get_social_categories
   - get_social_category
   - get_social_tags
@@ -465,7 +477,7 @@
   - get_timezones
 - EmailISV: 1 names
   - verify_email
-- SocialMedia: 17 names
+- SocialMedia: 29 names
   - search_social_posts
   - create_social_post
   - get_social_post
@@ -477,12 +489,24 @@
   - upload_social_csv
   - get_csv_upload_status
   - set_csv_accounts
+  - get_csv_posts
+  - finalize_social_csv
+  - delete_social_csv
+  - delete_csv_post
   - get_social_categories
   - get_social_category
   - get_social_tags
   - get_social_tags_by_ids
   - start_social_oauth
   - get_platform_accounts
+  - attach_google_locations
+  - attach_facebook_pages
+  - attach_instagram_accounts
+  - attach_linkedin_accounts
+  - attach_twitter_profile
+  - attach_tiktok_profile
+  - attach_tiktok_business_profile
+  - get_social_statistics
 - Media: 3 names
   - get_media_files
   - upload_media_file

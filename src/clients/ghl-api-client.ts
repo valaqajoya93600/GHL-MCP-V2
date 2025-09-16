@@ -4625,6 +4625,19 @@ export class GHLApiClient {
     }
   }
 
+  async attachTikTokBusinessProfile(accountId: string, profileData: GHLAttachTikTokAccountRequest): Promise<GHLApiResponse<GHLSocialAccount>> {
+    try {
+      const locationId = this.config.locationId;
+      const response: AxiosResponse<GHLSocialAccount> = await this.axiosInstance.post(
+        `/social-media-posting/oauth/${locationId}/tiktok-business/accounts/${accountId}`,
+        profileData
+      );
+      return this.wrapResponse(response.data);
+    } catch (error) {
+      return this.handleApiError(error as AxiosError<GHLErrorResponse>);
+    }
+  }
+
   async getTikTokBusinessProfile(accountId: string): Promise<GHLApiResponse<GHLGetTikTokAccountsResponse>> {
     try {
       const locationId = this.config.locationId;

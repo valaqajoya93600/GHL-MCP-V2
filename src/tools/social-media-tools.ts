@@ -22,7 +22,22 @@ import {
   MCPGetTagsByIdsParams,
   MCPStartOAuthParams,
   MCPGetOAuthAccountsParams,
-  MCPAttachOAuthAccountParams
+  MCPAttachGoogleLocationsParams,
+  MCPAttachFacebookPagesParams,
+  MCPAttachInstagramAccountsParams,
+  MCPAttachLinkedInAccountsParams,
+  MCPAttachTwitterProfileParams,
+  MCPAttachTikTokProfileParams,
+  MCPAttachTikTokBusinessProfileParams,
+  MCPGetSocialStatisticsParams
+} from '../types/ghl-types.js';
+import {
+  GHLAttachGMBLocationRequest,
+  GHLAttachFBAccountRequest,
+  GHLAttachIGAccountRequest,
+  GHLAttachLinkedInAccountRequest,
+  GHLAttachTwitterAccountRequest,
+  GHLAttachTikTokAccountRequest
 } from '../types/ghl-types.js';
 
 export class SocialMediaTools {
@@ -196,49 +211,242 @@ export class SocialMediaTools {
         }
       },
 
-      // CSV Operations Tools
+      // CSV Operations
       {
         name: 'upload_social_csv',
-        description: 'Upload CSV file for bulk social media posts',
+        description: 'Upload a CSV file containing social media posts for bulk scheduling',
         inputSchema: {
           type: 'object',
           properties: {
-            file: { type: 'string', description: 'CSV file data (base64 or file path)' }
+            file: {
+              type: 'string',
+              description: 'Base64-encoded CSV content or a file path accessible to the server',
+              contentEncoding: 'base64',
+              contentMediaType: 'text/csv'
+            }
           },
           required: ['file']
         }
       },
       {
         name: 'get_csv_upload_status',
-        description: 'Get status of CSV uploads',
+        description: 'List CSV uploads and their processing status',
         inputSchema: {
           type: 'object',
           properties: {
-            skip: { type: 'number', description: 'Number to skip', default: 0 },
-            limit: { type: 'number', description: 'Number to return', default: 10 },
-            includeUsers: { type: 'boolean', description: 'Include user data' },
-            userId: { type: 'string', description: 'Filter by user ID' }
+            skip: { type: 'number', description: 'Number of records to skip', default: 0 },
+            limit: { type: 'number', description: 'Number of records to return', default: 10 },
+            includeUsers: { type: 'boolean', description: 'Include user details in the response', default: true },
+            userId: { type: 'string', description: 'Filter results by user ID' }
           }
         }
       },
       {
         name: 'set_csv_accounts',
-        description: 'Set accounts for CSV import processing',
+        description: 'Assign connected accounts to an uploaded CSV file',
         inputSchema: {
           type: 'object',
           properties: {
             accountIds: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Account IDs for CSV import'
+              description: 'Account IDs that will publish the posts from the CSV'
             },
-            filePath: { type: 'string', description: 'CSV file path' },
-            rowsCount: { type: 'number', description: 'Number of rows to process' },
-            fileName: { type: 'string', description: 'CSV file name' },
-            approver: { type: 'string', description: 'Approver user ID' },
-            userId: { type: 'string', description: 'User ID' }
+            filePath: { type: 'string', description: 'Storage path of the uploaded CSV file' },
+            rowsCount: { type: 'number', description: 'Number of posts contained in the CSV' },
+            fileName: { type: 'string', description: 'Original CSV file name' },
+            approver: { type: 'string', description: 'Optional user ID responsible for approving the CSV' },
+            userId: { type: 'string', description: 'User ID initiating the assignment' }
           },
           required: ['accountIds', 'filePath', 'rowsCount', 'fileName']
+        }
+      },
+      {
+        name: 'get_csv_posts',
+        description: 'Retrieve posts contained within an uploaded CSV import',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            csvId: { type: 'string', description: 'CSV import ID' },
+            skip: { type: 'number', description: 'Number of records to skip', default: 0 },
+            limit: { type: 'number', description: 'Number of records to return', default: 10 }
+          },
+          required: ['csvId']
+        }
+      },
+      {
+        name: 'finalize_social_csv',
+        description: 'Finalize a CSV import so its posts can be scheduled or published',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            csvId: { type: 'string', description: 'CSV import ID' },
+            userId: { type: 'string', description: 'User ID confirming the finalize action' }
+          },
+          required: ['csvId']
+        }
+      },
+      {
+        name: 'delete_social_csv',
+        description: 'Delete an uploaded CSV import',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            csvId: { type: 'string', description: 'CSV import ID' }
+          },
+          required: ['csvId']
+        }
+      },
+      {
+        name: 'delete_csv_post',
+        description: 'Delete a single post entry from a CSV import',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            csvId: { type: 'string', description: 'CSV import ID' },
+            postId: { type: 'string', description: 'Post ID inside the CSV import' }
+          },
+          required: ['csvId', 'postId']
+        }
+      },
+
+      // OAuth Account Attachment Tools
+      {
+        name: 'attach_google_locations',
+        description: 'Attach selected Google Business locations returned from OAuth',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            accountId: { type: 'string', description: 'OAuth account ID for Google' },
+            location: { type: 'object', description: 'Location payload returned by the OAuth window' },
+            account: { type: 'object', description: 'Account payload returned by the OAuth window' },
+            companyId: { type: 'string', description: 'Optional company ID' }
+          },
+          required: ['accountId', 'location', 'account']
+        }
+      },
+      {
+        name: 'attach_facebook_pages',
+        description: 'Attach Facebook pages returned from OAuth',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            accountId: { type: 'string', description: 'OAuth account ID for Facebook' },
+            originId: { type: 'string', description: 'Facebook page origin ID' },
+            name: { type: 'string', description: 'Facebook page name' },
+            avatar: { type: 'string', description: 'Optional page avatar URL' },
+            companyId: { type: 'string', description: 'Optional company ID' }
+          },
+          required: ['accountId', 'originId', 'name']
+        }
+      },
+      {
+        name: 'attach_instagram_accounts',
+        description: 'Attach Instagram accounts returned from OAuth',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            accountId: { type: 'string', description: 'OAuth account ID for Instagram' },
+            originId: { type: 'string', description: 'Instagram account origin ID' },
+            name: { type: 'string', description: 'Instagram account name' },
+            pageId: { type: 'string', description: 'Facebook page ID linked to the Instagram account' },
+            avatar: { type: 'string', description: 'Optional avatar URL' },
+            companyId: { type: 'string', description: 'Optional company ID' }
+          },
+          required: ['accountId', 'originId', 'name', 'pageId']
+        }
+      },
+      {
+        name: 'attach_linkedin_accounts',
+        description: 'Attach LinkedIn profiles, pages, or organizations returned from OAuth',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            accountId: { type: 'string', description: 'OAuth account ID for LinkedIn' },
+            originId: { type: 'string', description: 'LinkedIn origin ID' },
+            name: { type: 'string', description: 'LinkedIn entity name' },
+            type: { type: 'string', enum: ['page', 'group', 'profile', 'location', 'business'], description: 'Type of LinkedIn entity' },
+            avatar: { type: 'string', description: 'Optional avatar URL' },
+            urn: { type: 'string', description: 'Optional LinkedIn URN' },
+            companyId: { type: 'string', description: 'Optional company ID' }
+          },
+          required: ['accountId', 'originId', 'name', 'type']
+        }
+      },
+      {
+        name: 'attach_twitter_profile',
+        description: 'Attach a Twitter/X profile returned from OAuth',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            accountId: { type: 'string', description: 'OAuth account ID for Twitter/X' },
+            originId: { type: 'string', description: 'Twitter profile origin ID' },
+            name: { type: 'string', description: 'Profile display name' },
+            username: { type: 'string', description: 'Profile handle/username' },
+            avatar: { type: 'string', description: 'Optional avatar URL' },
+            protected: { type: 'boolean', description: 'Whether the profile is protected' },
+            verified: { type: 'boolean', description: 'Whether the profile is verified' },
+            companyId: { type: 'string', description: 'Optional company ID' }
+          },
+          required: ['accountId', 'originId', 'name']
+        }
+      },
+      {
+        name: 'attach_tiktok_profile',
+        description: 'Attach a TikTok profile returned from OAuth',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            accountId: { type: 'string', description: 'OAuth account ID for TikTok' },
+            originId: { type: 'string', description: 'TikTok profile origin ID' },
+            name: { type: 'string', description: 'Profile name' },
+            username: { type: 'string', description: 'Profile username' },
+            avatar: { type: 'string', description: 'Optional avatar URL' },
+            verified: { type: 'boolean', description: 'Whether the profile is verified' },
+            type: { type: 'string', enum: ['page', 'group', 'profile', 'location', 'business'], description: 'Profile type reported by TikTok', default: 'profile' },
+            companyId: { type: 'string', description: 'Optional company ID' }
+          },
+          required: ['accountId', 'originId', 'name']
+        }
+      },
+      {
+        name: 'attach_tiktok_business_profile',
+        description: 'Attach a TikTok Business profile returned from OAuth',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            accountId: { type: 'string', description: 'OAuth account ID for TikTok Business' },
+            originId: { type: 'string', description: 'TikTok Business profile origin ID' },
+            name: { type: 'string', description: 'Profile name' },
+            username: { type: 'string', description: 'Profile username' },
+            avatar: { type: 'string', description: 'Optional avatar URL' },
+            verified: { type: 'boolean', description: 'Whether the profile is verified' },
+            type: { type: 'string', enum: ['page', 'group', 'profile', 'location', 'business'], description: 'Profile type reported by TikTok', default: 'business' },
+            companyId: { type: 'string', description: 'Optional company ID' }
+          },
+          required: ['accountId', 'originId', 'name']
+        }
+      },
+
+      // Analytics Tools
+      {
+        name: 'get_social_statistics',
+        description: 'Retrieve 7-day social media performance metrics for connected accounts',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            profileIds: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Array of connected account IDs to fetch analytics for'
+            },
+            platforms: {
+              type: 'array',
+              items: { type: 'string', enum: ['google', 'facebook', 'instagram', 'linkedin', 'twitter', 'tiktok', 'tiktok-business'] },
+              description: 'Optional platforms to limit the analytics response'
+            }
+          },
+          required: ['profileIds']
         }
       },
 
@@ -348,9 +556,39 @@ export class SocialMediaTools {
         case 'bulk_delete_social_posts':
           return await this.bulkDeleteSocialPosts(args);
         case 'get_social_accounts':
-          return await this.getSocialAccounts(args);
+          return await this.getSocialAccounts();
         case 'delete_social_account':
           return await this.deleteSocialAccount(args);
+        case 'upload_social_csv':
+          return await this.uploadSocialCSV(args);
+        case 'get_csv_upload_status':
+          return await this.getSocialCSVUploadStatus(args);
+        case 'set_csv_accounts':
+          return await this.setSocialCSVAccounts(args);
+        case 'get_csv_posts':
+          return await this.getSocialCSVPosts(args);
+        case 'finalize_social_csv':
+          return await this.finalizeSocialCSV(args);
+        case 'delete_social_csv':
+          return await this.deleteSocialCSV(args);
+        case 'delete_csv_post':
+          return await this.deleteSocialCSVPost(args);
+        case 'attach_google_locations':
+          return await this.attachGoogleLocations(args);
+        case 'attach_facebook_pages':
+          return await this.attachFacebookPages(args);
+        case 'attach_instagram_accounts':
+          return await this.attachInstagramAccounts(args);
+        case 'attach_linkedin_accounts':
+          return await this.attachLinkedInAccounts(args);
+        case 'attach_twitter_profile':
+          return await this.attachTwitterProfile(args);
+        case 'attach_tiktok_profile':
+          return await this.attachTikTokProfile(args);
+        case 'attach_tiktok_business_profile':
+          return await this.attachTikTokBusinessProfile(args);
+        case 'get_social_statistics':
+          return await this.getSocialStatistics(args);
         case 'get_social_categories':
           return await this.getSocialCategories(args);
         case 'get_social_category':
@@ -444,15 +682,18 @@ export class SocialMediaTools {
 
   private async bulkDeleteSocialPosts(params: MCPBulkDeletePostsParams) {
     const response = await this.ghlClient.bulkDeleteSocialPosts({ postIds: params.postIds });
-    
+    const data: any = response.data || {};
+    const deletedCount = data.deletedCount ?? data.results?.deletedCount ?? 0;
+    const message = data.message ?? data.results?.message ?? `${deletedCount} social media posts deleted successfully`;
+
     return {
       success: true,
-      deletedCount: response.data?.deletedCount || 0,
-      message: `${response.data?.deletedCount || 0} social media posts deleted successfully`
+      deletedCount,
+      message
     };
   }
 
-  private async getSocialAccounts(params: MCPGetAccountsParams) {
+  private async getSocialAccounts(_params?: MCPGetAccountsParams) {
     const response = await this.ghlClient.getSocialAccounts();
     
     return {
@@ -464,7 +705,7 @@ export class SocialMediaTools {
   }
 
   private async deleteSocialAccount(params: MCPDeleteAccountParams) {
-    const response = await this.ghlClient.deleteSocialAccount(
+    await this.ghlClient.deleteSocialAccount(
       params.accountId,
       params.companyId,
       params.userId
@@ -473,6 +714,217 @@ export class SocialMediaTools {
     return {
       success: true,
       message: `Social media account ${params.accountId} deleted successfully`
+    };
+  }
+
+  private async uploadSocialCSV(params: MCPUploadCSVParams) {
+    const response = await this.ghlClient.uploadSocialCSV(params);
+    return {
+      success: true,
+      data: response.data,
+      message: 'CSV uploaded successfully'
+    };
+  }
+
+  private async getSocialCSVUploadStatus(params: MCPGetUploadStatusParams) {
+    const response = await this.ghlClient.getSocialCSVUploadStatus(
+      params.skip,
+      params.limit,
+      params.includeUsers,
+      params.userId
+    );
+    return {
+      success: true,
+      csvs: response.data?.csvs || [],
+      count: response.data?.count || 0,
+      message: `Retrieved ${response.data?.count || 0} CSV imports`
+    };
+  }
+
+  private async setSocialCSVAccounts(params: MCPSetAccountsParams) {
+    const response = await this.ghlClient.setSocialCSVAccounts({
+      accountIds: params.accountIds,
+      filePath: params.filePath,
+      rowsCount: params.rowsCount,
+      fileName: params.fileName,
+      approver: params.approver,
+      userId: params.userId
+    });
+    return {
+      success: true,
+      data: response.data,
+      message: 'Accounts assigned to CSV import'
+    };
+  }
+
+  private async getSocialCSVPosts(params: MCPGetCSVPostParams) {
+    const response = await this.ghlClient.getSocialCSVPosts(
+      params.csvId,
+      params.skip,
+      params.limit
+    );
+    return {
+      success: true,
+      data: response.data,
+      message: `Retrieved posts for CSV import ${params.csvId}`
+    };
+  }
+
+  private async finalizeSocialCSV(params: MCPFinalizeCSVParams) {
+    const response = await this.ghlClient.finalizeSocialCSV(params.csvId, { userId: params.userId });
+    return {
+      success: true,
+      data: response.data,
+      message: `CSV import ${params.csvId} finalized`
+    };
+  }
+
+  private async deleteSocialCSV(params: MCPDeleteCSVParams) {
+    await this.ghlClient.deleteSocialCSV(params.csvId);
+    return {
+      success: true,
+      message: `CSV import ${params.csvId} deleted`
+    };
+  }
+
+  private async deleteSocialCSVPost(params: MCPDeleteCSVPostParams) {
+    await this.ghlClient.deleteSocialCSVPost(params.csvId, params.postId);
+    return {
+      success: true,
+      message: `Removed post ${params.postId} from CSV import ${params.csvId}`
+    };
+  }
+
+  private async attachGoogleLocations(params: MCPAttachGoogleLocationsParams) {
+    const { accountId, ...attachData } = params;
+    const payload: GHLAttachGMBLocationRequest = {
+      companyId: attachData.companyId,
+      location: attachData.location,
+      account: attachData.account
+    };
+    const response = await this.ghlClient.setGoogleBusinessLocations(accountId, payload);
+    return {
+      success: true,
+      account: response.data,
+      message: `Attached Google locations to account ${accountId}`
+    };
+  }
+
+  private async attachFacebookPages(params: MCPAttachFacebookPagesParams) {
+    const { accountId, ...attachData } = params;
+    const payload: GHLAttachFBAccountRequest = {
+      type: 'page',
+      originId: attachData.originId,
+      name: attachData.name,
+      avatar: attachData.avatar,
+      companyId: attachData.companyId
+    };
+    const response = await this.ghlClient.attachFacebookPages(accountId, payload);
+    return {
+      success: true,
+      account: response.data,
+      message: `Facebook pages attached to account ${accountId}`
+    };
+  }
+
+  private async attachInstagramAccounts(params: MCPAttachInstagramAccountsParams) {
+    const { accountId, ...attachData } = params;
+    const payload: GHLAttachIGAccountRequest = {
+      originId: attachData.originId,
+      name: attachData.name,
+      avatar: attachData.avatar,
+      pageId: attachData.pageId,
+      companyId: attachData.companyId
+    };
+    const response = await this.ghlClient.attachInstagramAccounts(accountId, payload);
+    return {
+      success: true,
+      account: response.data,
+      message: `Instagram account attached to account ${accountId}`
+    };
+  }
+
+  private async attachLinkedInAccounts(params: MCPAttachLinkedInAccountsParams) {
+    const { accountId, ...attachData } = params;
+    const payload: GHLAttachLinkedInAccountRequest = {
+      originId: attachData.originId,
+      name: attachData.name,
+      type: attachData.type,
+      avatar: attachData.avatar,
+      urn: attachData.urn,
+      companyId: attachData.companyId
+    };
+    const response = await this.ghlClient.attachLinkedInAccounts(accountId, payload);
+    return {
+      success: true,
+      account: response.data,
+      message: `LinkedIn account attached to account ${accountId}`
+    };
+  }
+
+  private async attachTwitterProfile(params: MCPAttachTwitterProfileParams) {
+    const { accountId, ...attachData } = params;
+    const payload: GHLAttachTwitterAccountRequest = {
+      originId: attachData.originId,
+      name: attachData.name,
+      username: attachData.username,
+      avatar: attachData.avatar,
+      protected: attachData.protected,
+      verified: attachData.verified,
+      companyId: attachData.companyId
+    };
+    const response = await this.ghlClient.attachTwitterProfile(accountId, payload);
+    return {
+      success: true,
+      account: response.data,
+      message: `Twitter profile attached to account ${accountId}`
+    };
+  }
+
+  private async attachTikTokProfile(params: MCPAttachTikTokProfileParams) {
+    const { accountId, ...attachData } = params;
+    const payload: GHLAttachTikTokAccountRequest = {
+      originId: attachData.originId,
+      name: attachData.name,
+      username: attachData.username,
+      avatar: attachData.avatar,
+      verified: attachData.verified,
+      type: attachData.type ?? 'profile',
+      companyId: attachData.companyId
+    };
+    const response = await this.ghlClient.attachTikTokProfile(accountId, payload);
+    return {
+      success: true,
+      account: response.data,
+      message: `TikTok profile attached to account ${accountId}`
+    };
+  }
+
+  private async attachTikTokBusinessProfile(params: MCPAttachTikTokBusinessProfileParams) {
+    const { accountId, ...attachData } = params;
+    const payload: GHLAttachTikTokAccountRequest = {
+      originId: attachData.originId,
+      name: attachData.name,
+      username: attachData.username,
+      avatar: attachData.avatar,
+      verified: attachData.verified,
+      type: attachData.type ?? 'business',
+      companyId: attachData.companyId
+    };
+    const response = await this.ghlClient.attachTikTokBusinessProfile(accountId, payload);
+    return {
+      success: true,
+      account: response.data,
+      message: `TikTok Business profile attached to account ${accountId}`
+    };
+  }
+
+  private async getSocialStatistics(params: MCPGetSocialStatisticsParams) {
+    const response = await this.ghlClient.getSocialStatistics(params.profileIds, params.platforms);
+    return {
+      success: true,
+      statistics: response.data,
+      message: `Retrieved analytics for ${params.profileIds.length} profile(s)`
     };
   }
 

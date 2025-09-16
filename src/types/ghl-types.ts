@@ -2933,10 +2933,39 @@ export interface MCPGetOAuthAccountsParams {
   accountId: string;
 }
 
-export interface MCPAttachOAuthAccountParams {
-  platform: GHLSocialPlatform;
+export interface MCPAttachGoogleLocationsParams extends GHLAttachGMBLocationRequest {
   accountId: string;
-  attachData: any; // Platform-specific attach data
+}
+
+export interface MCPAttachFacebookPagesParams extends Omit<GHLAttachFBAccountRequest, 'type'> {
+  accountId: string;
+}
+
+export interface MCPAttachInstagramAccountsParams extends GHLAttachIGAccountRequest {
+  accountId: string;
+}
+
+export interface MCPAttachLinkedInAccountsParams extends GHLAttachLinkedInAccountRequest {
+  accountId: string;
+}
+
+export interface MCPAttachTwitterProfileParams extends GHLAttachTwitterAccountRequest {
+  accountId: string;
+}
+
+export interface MCPAttachTikTokProfileParams extends Omit<GHLAttachTikTokAccountRequest, 'type'> {
+  accountId: string;
+  type?: GHLAccountType;
+}
+
+export interface MCPAttachTikTokBusinessProfileParams extends Omit<GHLAttachTikTokAccountRequest, 'type'> {
+  accountId: string;
+  type?: GHLAccountType;
+}
+
+export interface MCPGetSocialStatisticsParams {
+  profileIds: string[];
+  platforms?: GHLSocialPlatform[];
 }
 
 // ==== MISSING CALENDAR API TYPES ====

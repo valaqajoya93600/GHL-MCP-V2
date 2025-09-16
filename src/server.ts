@@ -469,11 +469,16 @@ class GHLMCPServer {
       // Account Management
       'get_social_accounts', 'delete_social_account',
       // CSV Operations
-      'upload_social_csv', 'get_csv_upload_status', 'set_csv_accounts',
+      'upload_social_csv', 'get_csv_upload_status', 'set_csv_accounts', 'get_csv_posts',
+      'finalize_social_csv', 'delete_social_csv', 'delete_csv_post',
       // Categories & Tags
       'get_social_categories', 'get_social_category', 'get_social_tags', 'get_social_tags_by_ids',
       // OAuth Integration
-      'start_social_oauth', 'get_platform_accounts'
+      'start_social_oauth', 'get_platform_accounts', 'attach_google_locations', 'attach_facebook_pages',
+      'attach_instagram_accounts', 'attach_linkedin_accounts', 'attach_twitter_profile', 'attach_tiktok_profile',
+      'attach_tiktok_business_profile',
+      // Analytics
+      'get_social_statistics'
     ];
     return socialMediaToolNames.includes(toolName);
   }
