@@ -125,8 +125,16 @@ class GHLMCPHttpServer {
     // Enable CORS for ChatGPT integration
     this.app.use(cors({
       origin: ['https://chatgpt.com', 'https://chat.openai.com', 'http://localhost:*'],
-      methods: ['GET', 'POST', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+      methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'Accept',
+        // Allow session headers used by Streamable HTTP clients
+        'X-Session-Id',
+        'X-MCP-Session-Id',
+        'MCP-Session-Id'
+      ],
       credentials: true
     }));
 
@@ -474,7 +482,8 @@ class GHLMCPHttpServer {
           health: '/health',
           capabilities: '/capabilities',
           tools: '/tools',
-          sse: '/sse'
+          sse: '/sse',
+          mcp: '/mcp'
         },
         tools: this.getToolsCount(),
         documentation: 'https://github.com/your-repo/ghl-mcp-server'
