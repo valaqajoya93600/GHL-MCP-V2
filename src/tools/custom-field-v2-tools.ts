@@ -283,15 +283,21 @@ export class CustomFieldV2Tools {
         case 'ghl_get_custom_field_by_id': {
           const params: MCPV2GetCustomFieldByIdParams = args;
           const result = await this.apiClient.getCustomFieldV2ById(params.id);
+          const data = this.ensureApiSuccess(result, 'get custom field by id');
           return {
             success: true,
-            data: result.data,
+            data,
             message: `Custom field/folder retrieved successfully`
           };
         }
 
         case 'ghl_create_custom_field': {
           const params: MCPV2CreateCustomFieldParams = args;
+          if (params.objectKey === 'contact' || params.objectKey === 'opportunity') {
+            throw new Error(
+              "Custom fields for contacts or opportunities must be created with the 'create_location_custom_field' tool."
+            );
+          }
           const result = await this.apiClient.createCustomFieldV2({
             locationId: params.locationId || '',
             name: params.name,
@@ -307,10 +313,15 @@ export class CustomFieldV2Tools {
             allowCustomOption: params.allowCustomOption,
             parentId: params.parentId
           });
+          const data = this.ensureApiSuccess(result, 'create custom field');
+          if (!data.field) {
+            throw new Error('Failed to create custom field: API did not return a field payload.');
+          }
+          const fieldKey = data.field.fieldKey || params.fieldKey;
           return {
             success: true,
-            data: result.data,
-            message: `Custom field '${params.fieldKey}' created successfully`
+            data,
+            message: `Custom field '${fieldKey}' created successfully`
           };
         }
 
@@ -326,9 +337,13 @@ export class CustomFieldV2Tools {
             acceptedFormats: params.acceptedFormats,
             maxFileLimit: params.maxFileLimit
           });
+          const data = this.ensureApiSuccess(result, 'update custom field');
+          if (!data.field) {
+            throw new Error('Failed to update custom field: API did not return a field payload.');
+          }
           return {
             success: true,
-            data: result.data,
+            data,
             message: `Custom field updated successfully`
           };
         }
@@ -336,9 +351,13 @@ export class CustomFieldV2Tools {
         case 'ghl_delete_custom_field': {
           const params: MCPV2DeleteCustomFieldParams = args;
           const result = await this.apiClient.deleteCustomFieldV2(params.id);
+          const data = this.ensureApiSuccess(result, 'delete custom field');
+          if (!data.succeded) {
+            throw new Error('Failed to delete custom field: API reported failure status.');
+          }
           return {
             success: true,
-            data: result.data,
+            data,
             message: `Custom field deleted successfully`
           };
         }
@@ -349,10 +368,11 @@ export class CustomFieldV2Tools {
             objectKey: params.objectKey,
             locationId: params.locationId || ''
           });
+          const data = this.ensureApiSuccess(result, 'get custom fields');
           return {
             success: true,
-            data: result.data,
-            message: `Retrieved ${result.data?.fields?.length || 0} fields and ${result.data?.folders?.length || 0} folders for object '${params.objectKey}'`
+            data,
+            message: `Retrieved ${data.fields?.length || 0} fields and ${data.folders?.length || 0} folders for object '${params.objectKey}'`
           };
         }
 
@@ -363,9 +383,10 @@ export class CustomFieldV2Tools {
             name: params.name,
             locationId: params.locationId || ''
           });
+          const data = this.ensureApiSuccess(result, 'create custom field folder');
           return {
             success: true,
-            data: result.data,
+            data,
             message: `Custom field folder '${params.name}' created successfully`
           };
         }
@@ -376,9 +397,10 @@ export class CustomFieldV2Tools {
             name: params.name,
             locationId: params.locationId || ''
           });
+          const data = this.ensureApiSuccess(result, 'update custom field folder');
           return {
             success: true,
-            data: result.data,
+            data,
             message: `Custom field folder updated to '${params.name}'`
           };
         }
@@ -389,9 +411,13 @@ export class CustomFieldV2Tools {
             id: params.id,
             locationId: params.locationId || ''
           });
+          const data = this.ensureApiSuccess(result, 'delete custom field folder');
+          if (!data.succeded) {
+            throw new Error('Failed to delete custom field folder: API reported failure status.');
+          }
           return {
             success: true,
-            data: result.data,
+            data,
             message: `Custom field folder deleted successfully`
           };
         }
@@ -407,4 +433,12 @@ export class CustomFieldV2Tools {
       };
     }
   }
-} 
+
+  private ensureApiSuccess<T>(result: { success: boolean; data?: T; error?: { message?: string } }, action: string): T {
+    if (!result.success || result.data == null) {
+      const errorMessage = result.error?.message || 'Unknown API error';
+      throw new Error(`Failed to ${action}: ${errorMessage}`);
+    }
+    return result.data;
+  }
+}

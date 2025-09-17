@@ -329,14 +329,11 @@ export class BlogTools {
   /**
    * CREATE BLOG POST
    */
-  private async createBlogPost(params: MCPCreateBlogPostParams): Promise<{ success: boolean; blogPost: GHLBlogPost; message: string }> {
+  private async createBlogPost(params: MCPCreateBlogPostParams): Promise<{ success: boolean; blogPost: GHLBlogPost | null; message: string }> {
     try {
-      // Set default publishedAt if status is PUBLISHED and no date provided
       let publishedAt = params.publishedAt;
-      if (!publishedAt && params.status === 'PUBLISHED') {
+      if (!publishedAt) {
         publishedAt = new Date().toISOString();
-      } else if (!publishedAt) {
-        publishedAt = new Date().toISOString(); // Always provide a date
       }
 
       const blogPostData = {
@@ -353,20 +350,24 @@ export class BlogTools {
         author: params.author,
         urlSlug: params.urlSlug,
         canonicalLink: params.canonicalLink,
-        publishedAt: publishedAt
+        publishedAt
       };
 
       const result = await this.ghlClient.createBlogPost(blogPostData);
-      
-      if (result.success && result.data) {
+      const responseData: any = result.data ?? {};
+      const createdPost: GHLBlogPost | null = (responseData.data as GHLBlogPost) ?? (responseData.blogPost as GHLBlogPost) ?? null;
+
+      if (result.success) {
         return {
           success: true,
-          blogPost: result.data.data,
-          message: `Blog post "${params.title}" created successfully with ID: ${result.data.data._id}`
+          blogPost: createdPost,
+          message: createdPost
+            ? `Blog post "${params.title}" created successfully with ID: ${createdPost._id}`
+            : 'Blog post create request accepted.'
         };
-      } else {
-        throw new Error('Failed to create blog post - no data returned');
       }
+
+      throw new Error('Failed to create blog post');
     } catch (error) {
       throw new Error(`Failed to create blog post: ${error}`);
     }
@@ -375,14 +376,13 @@ export class BlogTools {
   /**
    * UPDATE BLOG POST
    */
-  private async updateBlogPost(params: MCPUpdateBlogPostParams): Promise<{ success: boolean; blogPost: GHLBlogPost; message: string }> {
+  private async updateBlogPost(params: MCPUpdateBlogPostParams): Promise<{ success: boolean; blogPost: GHLBlogPost | null; message: string }> {
     try {
       const updateData: any = {
         locationId: this.ghlClient.getConfig().locationId,
         blogId: params.blogId
       };
 
-      // Only include fields that are provided
       if (params.title) updateData.title = params.title;
       if (params.content) updateData.rawHTML = params.content;
       if (params.description) updateData.description = params.description;
@@ -397,16 +397,18 @@ export class BlogTools {
       if (params.publishedAt) updateData.publishedAt = params.publishedAt;
 
       const result = await this.ghlClient.updateBlogPost(params.postId, updateData);
-      
-      if (result.success && result.data) {
+      const responseData: any = result.data ?? {};
+      const updatedPost: GHLBlogPost | null = (responseData.updatedBlogPost as GHLBlogPost) ?? (responseData.data as GHLBlogPost) ?? null;
+
+      if (result.success) {
         return {
           success: true,
-          blogPost: result.data.updatedBlogPost,
-          message: `Blog post updated successfully`
+          blogPost: updatedPost,
+          message: updatedPost ? `Blog post ${params.postId} updated successfully` : `Blog post ${params.postId} update accepted`
         };
-      } else {
-        throw new Error('Failed to update blog post - no data returned');
       }
+
+      throw new Error('Failed to update blog post');
     } catch (error) {
       throw new Error(`Failed to update blog post: ${error}`);
     }
