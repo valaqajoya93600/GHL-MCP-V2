@@ -976,8 +976,8 @@ export class GHLApiClient {
       // Ensure locationId is set
       const queryParams = {
         locationId: params.locationId || this.config.locationId,
-        skip: params.skip,
-        limit: params.limit,
+        skip: params.skip || 0,
+        limit: params.limit || 10,
         ...(params.searchTerm && { searchTerm: params.searchTerm })
       };
 
@@ -1002,8 +1002,8 @@ export class GHLApiClient {
       const queryParams = {
         locationId: params.locationId || this.config.locationId,
         blogId: params.blogId,
-        limit: params.limit,
-        offset: params.offset,
+        limit: params.limit || 10,
+        offset: params.offset || 0,
         ...(params.searchTerm && { searchTerm: params.searchTerm }),
         ...(params.status && { status: params.status })
       };
@@ -1074,8 +1074,8 @@ export class GHLApiClient {
       // Ensure locationId is set
       const queryParams = {
         locationId: params.locationId || this.config.locationId,
-        limit: params.limit,
-        offset: params.offset
+        limit: params.limit || 10,
+        offset: params.offset || 0
       };
 
       const response: AxiosResponse<GHLBlogAuthorsResponse> = await this.axiosInstance.get(
@@ -1098,8 +1098,8 @@ export class GHLApiClient {
       // Ensure locationId is set
       const queryParams = {
         locationId: params.locationId || this.config.locationId,
-        limit: params.limit,
-        offset: params.offset
+        limit: params.limit || 10,
+        offset: params.offset || 0
       };
 
       const response: AxiosResponse<GHLBlogCategoriesResponse> = await this.axiosInstance.get(

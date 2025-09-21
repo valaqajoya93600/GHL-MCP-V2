@@ -700,56 +700,10 @@ export interface GHLBlogPost {
   rawHTML?: string; // Full HTML content
 }
 
-// Create Blog Post Parameters
-export interface GHLCreateBlogPostRequest {
-  title: string;
-  locationId: string;
-  blogId: string;
-  imageUrl: string;
-  description: string;
-  rawHTML: string;
-  status: GHLBlogPostStatus;
-  imageAltText: string;
-  categories: string[]; // Array of category IDs
-  tags?: string[];
-  author: string; // Author ID
-  urlSlug: string;
-  canonicalLink?: string;
-  publishedAt: string; // ISO timestamp
-}
 
-// Update Blog Post Parameters
-export interface GHLUpdateBlogPostRequest {
-  title?: string;
-  locationId: string;
-  blogId: string;
-  imageUrl?: string;
-  description?: string;
-  rawHTML?: string;
-  status?: GHLBlogPostStatus;
-  imageAltText?: string;
-  categories?: string[];
-  tags?: string[];
-  author?: string;
-  urlSlug?: string;
-  canonicalLink?: string;
-  publishedAt?: string;
-}
+// Blog Post Create/Update Response interfaces defined below
 
-// Blog Post Create Response
-export interface GHLBlogPostCreateResponse {
-  data: GHLBlogPost;
-}
-
-// Blog Post Update Response
-export interface GHLBlogPostUpdateResponse {
-  updatedBlogPost: GHLBlogPost;
-}
-
-// Blog Post List Response
-export interface GHLBlogPostListResponse {
-  blogs: GHLBlogPost[];
-}
+// Blog Post List Response interface defined below
 
 // Blog Author Interface
 export interface GHLBlogAuthor {
@@ -796,44 +750,7 @@ export interface GHLUrlSlugCheckResponse {
   exists: boolean;
 }
 
-// Blog Post Search/List Parameters
-export interface GHLGetBlogPostsRequest {
-  locationId: string;
-  blogId: string;
-  limit: number;
-  offset: number;
-  searchTerm?: string;
-  status?: GHLBlogPostStatus;
-}
-
-// Blog Authors Request Parameters
-export interface GHLGetBlogAuthorsRequest {
-  locationId: string;
-  limit: number;
-  offset: number;
-}
-
-// Blog Categories Request Parameters  
-export interface GHLGetBlogCategoriesRequest {
-  locationId: string;
-  limit: number;
-  offset: number;
-}
-
-// Blog Sites Request Parameters
-export interface GHLGetBlogSitesRequest {
-  locationId: string;
-  skip: number;
-  limit: number;
-  searchTerm?: string;
-}
-
-// URL Slug Check Parameters
-export interface GHLCheckUrlSlugRequest {
-  locationId: string;
-  urlSlug: string;
-  postId?: string;
-}
+// Old blog interfaces removed - replaced with corrected versions below
 
 // MCP Tool Parameters - Blog Operations
 export interface MCPCreateBlogPostParams {
@@ -852,51 +769,7 @@ export interface MCPCreateBlogPostParams {
   publishedAt?: string; // ISO timestamp, defaults to now if not provided
 }
 
-export interface MCPUpdateBlogPostParams {
-  postId: string;
-  blogId: string;
-  title?: string;
-  content?: string;
-  description?: string;
-  imageUrl?: string;
-  imageAltText?: string;
-  urlSlug?: string;
-  author?: string;
-  categories?: string[];
-  tags?: string[];
-  status?: GHLBlogPostStatus;
-  canonicalLink?: string;
-  publishedAt?: string;
-}
-
-export interface MCPGetBlogPostsParams {
-  blogId: string;
-  limit?: number;
-  offset?: number;
-  searchTerm?: string;
-  status?: GHLBlogPostStatus;
-}
-
-export interface MCPGetBlogSitesParams {
-  skip?: number;
-  limit?: number;
-  searchTerm?: string;
-}
-
-export interface MCPGetBlogAuthorsParams {
-  limit?: number;
-  offset?: number;
-}
-
-export interface MCPGetBlogCategoriesParams {
-  limit?: number;
-  offset?: number;
-}
-
-export interface MCPCheckUrlSlugParams {
-  urlSlug: string;
-  postId?: string;
-}
+// All old MCP blog interfaces removed - replaced with corrected versions below
 
 // OPPORTUNITIES API INTERFACES - Based on Opportunities API v2021-07-28
 
@@ -6739,3 +6612,216 @@ export interface CreateInvoiceResponseDto extends DefaultInvoiceResponseDto {}
 export interface UpdateInvoiceResponseDto extends DefaultInvoiceResponseDto {}
 export interface DeleteInvoiceResponseDto extends DefaultInvoiceResponseDto {}
 export interface VoidInvoiceResponseDto extends DefaultInvoiceResponseDto {}
+
+// ===== BLOG API TYPES =====
+
+// Blog Site Response
+export interface GHLBlogSite {
+  _id: string;
+  name: string;
+}
+
+// Blog Author Response
+export interface GHLBlogAuthor {
+  _id: string;
+  name: string;
+  locationId: string;
+  updatedAt: string;
+  canonicalLink: string;
+}
+
+// Blog Category Response
+export interface GHLBlogCategory {
+  _id: string;
+  label: string;
+  locationId: string;
+  updatedAt: string;
+  canonicalLink: string;
+  urlSlug: string;
+}
+
+// Blog Post Response - Matches API specification
+export interface GHLBlogPost {
+  categories: string[];
+  tags?: string[];
+  archived: boolean;
+  _id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  status: GHLBlogPostStatus;
+  imageAltText: string;
+  urlSlug: string;
+  canonicalLink?: string;
+  author: string;
+  publishedAt: string;
+  updatedAt: string;
+}
+
+// Blog Sites Response - Matches API specification
+export interface GHLBlogSitesResponse {
+  data: GHLBlogSite[];
+}
+
+// Blog Authors Response - Matches API specification
+export interface GHLBlogAuthorsResponse {
+  authors: GHLBlogAuthor[];
+}
+
+// Blog Categories Response - Matches API specification
+export interface GHLBlogCategoriesResponse {
+  categories: GHLBlogCategory[];
+}
+
+// Blog Post List Response - Matches API specification
+export interface GHLBlogPostListResponse {
+  blogs: GHLBlogPost[];
+}
+
+// Blog Post Create Response - Matches API specification
+export interface GHLBlogPostCreateResponse {
+  data: GHLBlogPost;
+}
+
+// Blog Post Update Response - Matches API specification
+export interface GHLBlogPostUpdateResponse {
+  updatedBlogPost: GHLBlogPost;
+}
+
+// URL Slug Check Response - Matches API specification
+export interface GHLUrlSlugCheckResponse {
+  exists: boolean;
+}
+
+// Request Types - All properties optional since they're handled by the API client
+// Request parameter types (simple interfaces for API client use)
+export interface GHLGetBlogSitesRequest {
+  locationId?: string;
+  skip?: number;
+  limit?: number;
+  searchTerm?: string;
+}
+
+export interface GHLGetBlogPostsRequest {
+  locationId?: string;
+  blogId?: string;
+  limit?: number;
+  offset?: number;
+  searchTerm?: string;
+  status?: string;
+}
+
+export interface GHLCreateBlogPostRequest {
+  title?: string;
+  locationId?: string;
+  blogId?: string;
+  imageUrl?: string;
+  description?: string;
+  rawHTML?: string;
+  status?: string;
+  imageAltText?: string;
+  categories?: string[];
+  tags?: string[];
+  author?: string;
+  urlSlug?: string;
+  canonicalLink?: string;
+  publishedAt?: string;
+}
+
+export interface GHLUpdateBlogPostRequest {
+  title?: string;
+  locationId?: string;
+  blogId?: string;
+  imageUrl?: string;
+  description?: string;
+  rawHTML?: string;
+  status?: string;
+  imageAltText?: string;
+  categories?: string[];
+  tags?: string[];
+  author?: string;
+  urlSlug?: string;
+  canonicalLink?: string;
+  publishedAt?: string;
+}
+
+export interface GHLGetBlogAuthorsRequest {
+  locationId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GHLGetBlogCategoriesRequest {
+  locationId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GHLCheckUrlSlugRequest {
+  locationId?: string;
+  urlSlug?: string;
+  postId?: string;
+}
+
+// MCP Tool Parameter Interfaces
+export interface MCPCreateBlogPostParams {
+  title: string;
+  blogId: string;
+  content: string;
+  description: string;
+  imageUrl: string;
+  imageAltText: string;
+  urlSlug: string;
+  author: string;
+  categories: string[];
+  tags?: string[];
+  status?: GHLBlogPostStatus;
+  canonicalLink?: string;
+  publishedAt?: string;
+}
+
+export interface MCPUpdateBlogPostParams {
+  postId: string;
+  blogId?: string;
+  title?: string;
+  content?: string;
+  description?: string;
+  imageUrl?: string;
+  imageAltText?: string;
+  urlSlug?: string;
+  author?: string;
+  categories?: string[];
+  tags?: string[];
+  status?: GHLBlogPostStatus;
+  canonicalLink?: string;
+  publishedAt?: string;
+}
+
+export interface MCPGetBlogPostsParams {
+  blogId: string;
+  limit?: number;
+  offset?: number;
+  searchTerm?: string;
+  status?: GHLBlogPostStatus;
+}
+
+export interface MCPGetBlogSitesParams {
+  skip?: number;
+  limit?: number;
+  searchTerm?: string;
+}
+
+export interface MCPGetBlogAuthorsParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface MCPGetBlogCategoriesParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface MCPCheckUrlSlugParams {
+  urlSlug: string;
+  postId?: string;
+}

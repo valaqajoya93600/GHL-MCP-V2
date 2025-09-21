@@ -362,7 +362,7 @@ export class BlogTools {
           success: true,
           blogPost: createdPost,
           message: createdPost
-            ? `Blog post "${params.title}" created successfully with ID: ${createdPost._id}`
+            ? `Blog post created successfully`
             : 'Blog post create request accepted.'
         };
       }
@@ -404,7 +404,7 @@ export class BlogTools {
         return {
           success: true,
           blogPost: updatedPost,
-          message: updatedPost ? `Blog post ${params.postId} updated successfully` : `Blog post ${params.postId} update accepted`
+          message: updatedPost ? `Blog post updated successfully` : `Blog post update accepted`
         };
       }
 
@@ -459,7 +459,7 @@ export class BlogTools {
       };
 
       const result = await this.ghlClient.getBlogSites(searchParams);
-      
+
       if (result.success && result.data) {
         const sites = result.data.data || [];
         return {
