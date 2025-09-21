@@ -354,14 +354,12 @@ export class BlogTools {
       };
 
       const result = await this.ghlClient.createBlogPost(blogPostData);
-      const responseData: any = result.data ?? {};
-      const createdPost: GHLBlogPost | null = (responseData.data as GHLBlogPost) ?? (responseData.blogPost as GHLBlogPost) ?? null;
 
       if (result.success) {
         return {
           success: true,
-          blogPost: createdPost,
-          message: createdPost
+          blogPost: result.data?.data || null,
+          message: result.data?.data
             ? `Blog post created successfully`
             : 'Blog post create request accepted.'
         };
@@ -397,14 +395,12 @@ export class BlogTools {
       if (params.publishedAt) updateData.publishedAt = params.publishedAt;
 
       const result = await this.ghlClient.updateBlogPost(params.postId, updateData);
-      const responseData: any = result.data ?? {};
-      const updatedPost: GHLBlogPost | null = (responseData.updatedBlogPost as GHLBlogPost) ?? (responseData.data as GHLBlogPost) ?? null;
 
       if (result.success) {
         return {
           success: true,
-          blogPost: updatedPost,
-          message: updatedPost ? `Blog post updated successfully` : `Blog post update accepted`
+          blogPost: result.data?.updatedBlogPost || null,
+          message: result.data?.updatedBlogPost ? `Blog post updated successfully` : `Blog post update accepted`
         };
       }
 

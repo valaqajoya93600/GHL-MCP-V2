@@ -1036,7 +1036,9 @@ export class GHLApiClient {
         payload
       );
 
-      return this.wrapResponse(response.data);
+      const blogPostData = response.data.data;
+      const createResponse: GHLBlogPostCreateResponse = { data: blogPostData };
+      return this.wrapResponse(createResponse);
     } catch (error) {
       return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
@@ -1059,7 +1061,9 @@ export class GHLApiClient {
         payload
       );
 
-      return this.wrapResponse(response.data);
+      const blogPostData = response.data.updatedBlogPost;
+      const updateResponse: GHLBlogPostUpdateResponse = { updatedBlogPost: blogPostData };
+      return this.wrapResponse(updateResponse);
     } catch (error) {
       return this.handleApiError(error as AxiosError<GHLErrorResponse>);
     }
