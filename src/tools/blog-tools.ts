@@ -331,10 +331,8 @@ export class BlogTools {
    */
   private async createBlogPost(params: MCPCreateBlogPostParams): Promise<{ success: boolean; blogPost: GHLBlogPost | null; message: string }> {
     try {
-      let publishedAt = params.publishedAt;
-      if (!publishedAt) {
-        publishedAt = new Date().toISOString();
-      }
+      // Ensure publishedAt is set (required by API)
+      const publishedAt = params.publishedAt || new Date().toISOString();
 
       const blogPostData = {
         title: params.title,
@@ -355,13 +353,22 @@ export class BlogTools {
 
       const result = await this.ghlClient.createBlogPost(blogPostData);
 
+      // Debug logging for troubleshooting
+      console.log('Blog creation API response:', JSON.stringify(result, null, 2));
+
       if (result.success) {
+        // Handle different possible response structures
+        const responseData = result.data as any;
+        const blogPostData = responseData?.data || responseData?.blogPost || responseData;
+
+        console.log('Extracted blog post data:', JSON.stringify(blogPostData, null, 2));
+
         return {
           success: true,
-          blogPost: result.data?.data || null,
-          message: result.data?.data
+          blogPost: blogPostData && typeof blogPostData === 'object' && '_id' in blogPostData ? blogPostData as GHLBlogPost : null,
+          message: blogPostData && typeof blogPostData === 'object' && '_id' in blogPostData
             ? `Blog post created successfully`
-            : 'Blog post create request accepted.'
+            : 'Blog post create request accepted. The post may be processing asynchronously.'
         };
       }
 
@@ -396,11 +403,22 @@ export class BlogTools {
 
       const result = await this.ghlClient.updateBlogPost(params.postId, updateData);
 
+      // Debug logging for troubleshooting
+      console.log('Blog update API response:', JSON.stringify(result, null, 2));
+
       if (result.success) {
+        // Handle different possible response structures
+        const responseData = result.data as any;
+        const blogPostData = responseData?.updatedBlogPost || responseData?.data || responseData;
+
+        console.log('Extracted blog post update data:', JSON.stringify(blogPostData, null, 2));
+
         return {
           success: true,
-          blogPost: result.data?.updatedBlogPost || null,
-          message: result.data?.updatedBlogPost ? `Blog post updated successfully` : `Blog post update accepted`
+          blogPost: blogPostData && typeof blogPostData === 'object' && '_id' in blogPostData ? blogPostData as GHLBlogPost : null,
+          message: blogPostData && typeof blogPostData === 'object' && '_id' in blogPostData
+            ? `Blog post updated successfully`
+            : `Blog post update accepted. The post may be processing asynchronously.`
         };
       }
 
