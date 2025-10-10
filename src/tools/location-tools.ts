@@ -17,6 +17,10 @@ import {
   MCPUpdateLocationTagParams,
   MCPDeleteLocationTagParams,
   MCPSearchLocationTasksParams,
+  MCPCreateLocationRecurringTaskParams,
+  MCPGetLocationRecurringTaskParams,
+  MCPUpdateLocationRecurringTaskParams,
+  MCPDeleteLocationRecurringTaskParams,
   MCPGetCustomFieldsParams,
   MCPCreateCustomFieldParams,
   MCPGetCustomFieldParams,
@@ -33,6 +37,7 @@ import {
   GHLLocation,
   GHLLocationDetailed,
   GHLLocationTag,
+  GHLRecurringTask,
   GHLLocationCustomField,
   GHLLocationCustomValue
 } from '../types/ghl-types.js';
@@ -375,6 +380,190 @@ export class LocationTools {
         }
       },
 
+      {
+        name: 'create_location_recurring_task',
+        description: 'Create a recurring task schedule for a location',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            locationId: {
+              type: 'string',
+              description: 'The location ID where the recurring task will be created'
+            },
+            title: {
+              type: 'string',
+              description: 'Name of the recurring task'
+            },
+            description: {
+              type: 'string',
+              description: 'Optional description for the recurring task'
+            },
+            contactIds: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Optional list of contact IDs associated with this task'
+            },
+            owners: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Optional list of user IDs assigned to the task'
+            },
+            rruleOptions: {
+              type: 'object',
+              description: 'Recurring schedule options',
+              properties: {
+                intervalType: {
+                  type: 'string',
+                  enum: ['yearly', 'monthly', 'weekly', 'daily', 'hourly'],
+                  description: 'Frequency interval type'
+                },
+                interval: {
+                  type: 'number',
+                  description: 'Frequency interval count (e.g. every 2 weeks)'
+                },
+                startDate: {
+                  type: 'string',
+                  description: 'ISO timestamp when the first task should start'
+                },
+                endDate: {
+                  type: 'string',
+                  description: 'Optional ISO timestamp when the recurrence should end'
+                },
+                dayOfMonth: {
+                  type: 'number',
+                  description: 'Day of the month to run the task (1-31)'
+                },
+                dayOfWeek: {
+                  type: 'string',
+                  enum: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'],
+                  description: 'Day of the week for weekly recurrences'
+                },
+                monthOfYear: {
+                  type: 'number',
+                  description: 'Month of the year for yearly recurrences (1-12)'
+                },
+                count: {
+                  type: 'number',
+                  description: 'Maximum number of task executions'
+                },
+                createTaskIfOverDue: {
+                  type: 'boolean',
+                  description: 'Whether to create a task if the next occurrence is overdue'
+                },
+                dueAfterSeconds: {
+                  type: 'number',
+                  description: 'Number of seconds after start before the task is due'
+                }
+              },
+              required: ['intervalType', 'interval', 'startDate', 'dueAfterSeconds']
+            },
+            ignoreTaskCreation: {
+              type: 'boolean',
+              description: 'When true, skips creating the initial task instance'
+            }
+          },
+          required: ['locationId', 'title', 'rruleOptions']
+        }
+      },
+      {
+        name: 'get_location_recurring_task',
+        description: 'Get a recurring task configuration by ID',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            locationId: {
+              type: 'string',
+              description: 'The location ID owning the recurring task'
+            },
+            id: {
+              type: 'string',
+              description: 'Recurring task ID to retrieve'
+            }
+          },
+          required: ['locationId', 'id']
+        }
+      },
+      {
+        name: 'update_location_recurring_task',
+        description: 'Update a recurring task schedule for a location',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            locationId: {
+              type: 'string',
+              description: 'The location ID owning the recurring task'
+            },
+            id: {
+              type: 'string',
+              description: 'Recurring task ID to update'
+            },
+            title: {
+              type: 'string',
+              description: 'Updated task name'
+            },
+            description: {
+              type: 'string',
+              description: 'Updated description'
+            },
+            contactIds: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Updated contact associations'
+            },
+            owners: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Updated list of user IDs assigned to the task'
+            },
+            rruleOptions: {
+              type: 'object',
+              description: 'Updated recurring schedule options',
+              properties: {
+                intervalType: {
+                  type: 'string',
+                  enum: ['yearly', 'monthly', 'weekly', 'daily', 'hourly']
+                },
+                interval: { type: 'number' },
+                startDate: { type: 'string' },
+                endDate: { type: 'string' },
+                dayOfMonth: { type: 'number' },
+                dayOfWeek: {
+                  type: 'string',
+                  enum: ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
+                },
+                monthOfYear: { type: 'number' },
+                count: { type: 'number' },
+                createTaskIfOverDue: { type: 'boolean' },
+                dueAfterSeconds: { type: 'number' }
+              }
+            },
+            ignoreTaskCreation: {
+              type: 'boolean',
+              description: 'Update whether an initial task should be created'
+            }
+          },
+          required: ['locationId', 'id']
+        }
+      },
+      {
+        name: 'delete_location_recurring_task',
+        description: 'Delete a recurring task configuration from a location',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            locationId: {
+              type: 'string',
+              description: 'The location ID owning the recurring task'
+            },
+            id: {
+              type: 'string',
+              description: 'Recurring task ID to delete'
+            }
+          },
+          required: ['locationId', 'id']
+        }
+      },
+
       // Custom Fields Tools
       {
         name: 'get_location_custom_fields',
@@ -707,6 +896,14 @@ export class LocationTools {
       // Location Tasks
       case 'search_location_tasks':
         return this.searchLocationTasks(args as MCPSearchLocationTasksParams);
+      case 'create_location_recurring_task':
+        return this.createLocationRecurringTask(args as MCPCreateLocationRecurringTaskParams);
+      case 'get_location_recurring_task':
+        return this.getLocationRecurringTask(args as MCPGetLocationRecurringTaskParams);
+      case 'update_location_recurring_task':
+        return this.updateLocationRecurringTask(args as MCPUpdateLocationRecurringTaskParams);
+      case 'delete_location_recurring_task':
+        return this.deleteLocationRecurringTask(args as MCPDeleteLocationRecurringTaskParams);
 
       // Custom Fields
       case 'get_location_custom_fields':
@@ -934,6 +1131,86 @@ export class LocationTools {
       };
     } catch (error) {
       throw new Error(`Failed to search location tasks: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async createLocationRecurringTask(
+    params: MCPCreateLocationRecurringTaskParams
+  ): Promise<{ success: boolean; recurringTask: GHLRecurringTask; message: string }> {
+    try {
+      const { locationId, ...taskData } = params;
+      const response = await this.ghlClient.createLocationRecurringTask(locationId, taskData);
+      if (!response.success || !response.data) {
+        const errorMsg = response.error?.message || 'Unknown API error';
+        throw new Error(`API request failed: ${errorMsg}`);
+      }
+      const task = response.data.recurringTask as GHLRecurringTask;
+      return {
+        success: true,
+        recurringTask: task,
+        message: `Recurring task "${task.title}" created successfully`
+      };
+    } catch (error) {
+      throw new Error(`Failed to create recurring task: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async getLocationRecurringTask(
+    params: MCPGetLocationRecurringTaskParams
+  ): Promise<{ success: boolean; recurringTask: GHLRecurringTask; message: string }> {
+    try {
+      const response = await this.ghlClient.getLocationRecurringTask(params.locationId, params.id);
+      if (!response.success || !response.data) {
+        const errorMsg = response.error?.message || 'Unknown API error';
+        throw new Error(`API request failed: ${errorMsg}`);
+      }
+      const task = response.data.recurringTask as GHLRecurringTask;
+      return {
+        success: true,
+        recurringTask: task,
+        message: 'Recurring task retrieved successfully'
+      };
+    } catch (error) {
+      throw new Error(`Failed to get recurring task: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async updateLocationRecurringTask(
+    params: MCPUpdateLocationRecurringTaskParams
+  ): Promise<{ success: boolean; recurringTask: GHLRecurringTask; message: string }> {
+    try {
+      const { locationId, id, ...updates } = params;
+      const response = await this.ghlClient.updateLocationRecurringTask(locationId, id, updates);
+      if (!response.success || !response.data) {
+        const errorMsg = response.error?.message || 'Unknown API error';
+        throw new Error(`API request failed: ${errorMsg}`);
+      }
+      const task = response.data.recurringTask as GHLRecurringTask;
+      return {
+        success: true,
+        recurringTask: task,
+        message: `Recurring task "${task.title}" updated successfully`
+      };
+    } catch (error) {
+      throw new Error(`Failed to update recurring task: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async deleteLocationRecurringTask(
+    params: MCPDeleteLocationRecurringTaskParams
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await this.ghlClient.deleteLocationRecurringTask(params.locationId, params.id);
+      if (!response.success || !response.data) {
+        const errorMsg = response.error?.message || 'Unknown API error';
+        throw new Error(`API request failed: ${errorMsg}`);
+      }
+      return {
+        success: true,
+        message: `Recurring task ${response.data.id} deleted successfully`
+      };
+    } catch (error) {
+      throw new Error(`Failed to delete recurring task: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

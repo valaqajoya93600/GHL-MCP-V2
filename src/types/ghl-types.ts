@@ -1845,6 +1845,83 @@ export interface MCPSearchLocationTasksParams {
   businessId?: string;
 }
 
+export type GHLRecurringIntervalType = 'yearly' | 'monthly' | 'weekly' | 'daily' | 'hourly';
+
+export type GHLRecurringDayOfWeek = 'MO' | 'TU' | 'WE' | 'TH' | 'FR' | 'SA' | 'SU';
+
+export interface GHLRecurringTaskRRuleOptions {
+  intervalType: GHLRecurringIntervalType;
+  interval: number;
+  startDate: string;
+  dueAfterSeconds: number;
+  endDate?: string;
+  dayOfMonth?: number;
+  dayOfWeek?: GHLRecurringDayOfWeek;
+  monthOfYear?: number;
+  count?: number;
+  createTaskIfOverDue?: boolean;
+}
+
+export interface GHLRecurringTaskCreateRequest {
+  title: string;
+  description?: string;
+  contactIds?: string[];
+  owners?: string[];
+  rruleOptions: GHLRecurringTaskRRuleOptions;
+  ignoreTaskCreation?: boolean;
+}
+
+export interface GHLRecurringTaskUpdateRequest {
+  title?: string;
+  description?: string;
+  contactIds?: string[];
+  owners?: string[];
+  rruleOptions?: GHLRecurringTaskRRuleOptions;
+  ignoreTaskCreation?: boolean;
+}
+
+export interface GHLRecurringTask {
+  id: string;
+  title: string;
+  description?: string;
+  locationId: string;
+  updatedAt: string;
+  createdAt: string;
+  rruleOptions: GHLRecurringTaskRRuleOptions;
+  totalOccurrence: number;
+  deleted: boolean;
+  assignedTo?: string;
+  contactId?: string;
+}
+
+export interface GHLRecurringTaskResponse {
+  recurringTask: GHLRecurringTask;
+}
+
+export interface GHLDeleteRecurringTaskResponse {
+  id: string;
+  success: boolean;
+}
+
+export interface MCPCreateLocationRecurringTaskParams extends GHLRecurringTaskCreateRequest {
+  locationId: string;
+}
+
+export interface MCPUpdateLocationRecurringTaskParams extends GHLRecurringTaskUpdateRequest {
+  locationId: string;
+  id: string;
+}
+
+export interface MCPGetLocationRecurringTaskParams {
+  locationId: string;
+  id: string;
+}
+
+export interface MCPDeleteLocationRecurringTaskParams {
+  locationId: string;
+  id: string;
+}
+
 // Custom Fields MCP Parameters
 export interface MCPGetCustomFieldsParams {
   locationId: string;

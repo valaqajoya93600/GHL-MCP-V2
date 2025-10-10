@@ -93,6 +93,10 @@ import {
   GHLLocationTagDeleteResponse,
   GHLLocationTaskSearchRequest,
   GHLLocationTaskSearchResponse,
+  GHLRecurringTaskCreateRequest,
+  GHLRecurringTaskUpdateRequest,
+  GHLRecurringTaskResponse,
+  GHLDeleteRecurringTaskResponse,
   GHLLocationCustomFieldsResponse,
   GHLLocationCustomFieldResponse,
   GHLCreateCustomFieldRequest,
@@ -3998,11 +4002,15 @@ export class GHLApiClient {
    * Create Recurring Task
    * POST /locations/{locationId}/recurring-tasks
    */
-  async createLocationRecurringTask(locationId: string, taskData: any): Promise<GHLApiResponse<any>> {
+  async createLocationRecurringTask(
+    locationId: string,
+    taskData: GHLRecurringTaskCreateRequest
+  ): Promise<GHLApiResponse<GHLRecurringTaskResponse>> {
     try {
       const response: AxiosResponse<any> = await this.axiosInstance.post(
         `/locations/${locationId}/recurring-tasks`,
-        taskData
+        taskData,
+        { headers: this.getHeadersForVersion('2021-07-28') }
       );
       return this.wrapResponse(response.data);
     } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
@@ -4012,10 +4020,14 @@ export class GHLApiClient {
    * Get Recurring Task By Id
    * GET /locations/{locationId}/recurring-tasks/{id}
    */
-  async getLocationRecurringTask(locationId: string, id: string): Promise<GHLApiResponse<any>> {
+  async getLocationRecurringTask(
+    locationId: string,
+    id: string
+  ): Promise<GHLApiResponse<GHLRecurringTaskResponse>> {
     try {
       const response: AxiosResponse<any> = await this.axiosInstance.get(
-        `/locations/${locationId}/recurring-tasks/${id}`
+        `/locations/${locationId}/recurring-tasks/${id}`,
+        { headers: this.getHeadersForVersion('2021-07-28') }
       );
       return this.wrapResponse(response.data);
     } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
@@ -4025,11 +4037,16 @@ export class GHLApiClient {
    * Update Recurring Task
    * PUT /locations/{locationId}/recurring-tasks/{id}
    */
-  async updateLocationRecurringTask(locationId: string, id: string, updates: any): Promise<GHLApiResponse<any>> {
+  async updateLocationRecurringTask(
+    locationId: string,
+    id: string,
+    updates: GHLRecurringTaskUpdateRequest
+  ): Promise<GHLApiResponse<GHLRecurringTaskResponse>> {
     try {
       const response: AxiosResponse<any> = await this.axiosInstance.put(
         `/locations/${locationId}/recurring-tasks/${id}`,
-        updates
+        updates,
+        { headers: this.getHeadersForVersion('2021-07-28') }
       );
       return this.wrapResponse(response.data);
     } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
@@ -4039,10 +4056,14 @@ export class GHLApiClient {
    * Delete Recurring Task
    * DELETE /locations/{locationId}/recurring-tasks/{id}
    */
-  async deleteLocationRecurringTask(locationId: string, id: string): Promise<GHLApiResponse<any>> {
+  async deleteLocationRecurringTask(
+    locationId: string,
+    id: string
+  ): Promise<GHLApiResponse<GHLDeleteRecurringTaskResponse>> {
     try {
       const response: AxiosResponse<any> = await this.axiosInstance.delete(
-        `/locations/${locationId}/recurring-tasks/${id}`
+        `/locations/${locationId}/recurring-tasks/${id}`,
+        { headers: this.getHeadersForVersion('2021-07-28') }
       );
       return this.wrapResponse(response.data);
     } catch (error) { return this.handleApiError(error as AxiosError<GHLErrorResponse>); }
