@@ -1,11 +1,13 @@
 /**
- * GoHighLevel Contact Tools - FIXED VERSION
+ * GoHighLevel Contact Tools - PRODUCTION READY VERSION
  * Implements all contact management functionality for the MCP server
  * 
  * CHANGELOG:
- * - Fixed search_contacts to use query parameter for email/phone searches (GHL API compatibility)
- * - Fixed get_duplicate_contact to properly find contacts by email/phone
- * - Added proper error handling and validation
+ * - Fixed search_contacts to use query parameter for email/phone searches
+ * - Fixed get_contact with proper contactId validation
+ * - Enhanced search_contacts response with contactId on top level
+ * - Added comprehensive error handling and logging
+ * - Preserved get_contact tool with proper workflow
  */
 
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -110,7 +112,7 @@ export class ContactTools {
       },
       {
         name: 'search_contacts',
-        description: 'Search for contacts in GoHighLevel using email, phone, or name query. Returns array of matching contacts with contactId, email, phone, firstName, lastName, tags. CRITICAL USAGE: Call this BEFORE create_contact to check for duplicates. IMPORTANT: Provide at least ONE search parameter (query, email, or phone). Email search is most reliable for exact matches. Returns max 100 results. LocationId is auto-handled.',
+        description: 'Search for contacts in GoHighLevel using email, phone, or name query. Returns array of matching contacts with contactId on top level for easy access. CRITICAL USAGE: Call this BEFORE create_contact to check for duplicates. Returns contactId field that can be used directly in other tools like get_contact, update_contact, add_contact_tags. IMPORTANT: Provide at least ONE search parameter (query, email, or phone). Email search is most reliable for exact matches. LocationId is auto-handled.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -136,13 +138,13 @@ export class ContactTools {
       },
       {
         name: 'get_contact',
-        description: 'Get complete detailed information about a specific contact by contactId. Returns ALL contact fields including custom fields, tags, assigned user, creation date, last activity, business association. Use this after search_contacts to get full details, or to verify contact data after create/update operations. Required: contactId from search_contacts or create_contact.',
+        description: 'Get COMPLETE detailed information about a specific contact by exact contactId. CRITICAL WORKFLOW: 1) First use search_contacts to find contact and get contactId from result.contactId field. 2) Then use this tool with that contactId. REQUIRED: Valid contactId from search_contacts result. Returns ALL contact fields including custom fields, metadata, business association. DO NOT use this tool without getting contactId from search_contacts first. If you receive undefined contactId error, use search_contacts first to get the contactId.',
         inputSchema: {
           type: 'object',
           properties: {
             contactId: {
               type: 'string',
-              description: 'Unique contact identifier (ID). Get this from search_contacts, create_contact, or upsert_contact responses. Format: alphanumeric string (usually 20-30 characters). Example: "abc123xyz456def789ghi012"'
+              description: 'Exact contact ID obtained from search_contacts tool result.contactId field. REQUIRED. Must be a valid ID, not undefined or null. Example: "abc123xyz456def789". Get this from search_contacts response: result.contactId or result.contacts[0].id.'
             }
           },
           required: ['contactId']
@@ -662,7 +664,6 @@ export class ContactTools {
   // Basic Contact Management
   private async createContact(params: MCPCreateContactParams): Promise<any> {
     try {
-      // Validate required fields
       if (!params.email) {
         throw new Error('Email is required');
       }
@@ -692,104 +693,136 @@ export class ContactTools {
   }
 
   /**
- * FIXED: Search contacts with enhanced response structure for AI
- * Returns contactId on top level for easy access by AI agents
- */
-private async searchContacts(params: MCPSearchContactsParams): Promise<any> {
-  try {
-    // Priority: email > phone > query
-    // GHL API's query parameter searches across all text fields including email and phone
-    const searchQuery = params.email || params.phone || params.query;
-    
-    // Validate that at least one search parameter is provided
-    if (!searchQuery) {
-      throw new Error('At least one search parameter (query, email, or phone) is required');
-    }
-
-    console.log('[Contact Tools] Searching contacts with query:', searchQuery);
-
-    const response = await this.ghlClient.searchContacts({
-      locationId: this.ghlClient.getConfig().locationId,
-      query: searchQuery,
-      limit: params.limit || 25
-    });
-
-    if (!response.success) {
-      const errorMsg = typeof response.error === 'string' ? response.error : 'Failed to search contacts';
-      throw new Error(errorMsg);
-    }
-
-    const data = response.data || { contacts: [], total: 0 };
-    const contacts = data.contacts || [];
-    
-    console.log(`[Contact Tools] Found ${contacts.length} contacts`);
-
-    // Build response with first contact details on top level for easy AI access
-    const result: any = {
-      success: true,
-      contacts: contacts,
-      total: data.total || 0,
-      message: `Found ${data.total || 0} contacts`
-    };
-
-    // If contacts found, add first contact details to top level for easy access
-    if (contacts.length > 0) {
-      const firstContact = contacts[0];
-      result.contactId = firstContact.id;
-      result.email = firstContact.email;
-      result.phone = firstContact.phone;
-      result.firstName = firstContact.firstName;
-      result.lastName = firstContact.lastName;
-      result.fullName = `${firstContact.firstName || ''} ${firstContact.lastName || ''}`.trim();
-      result.tags = firstContact.tags || [];
+   * Search contacts with enhanced response - contactId on top level for AI
+   */
+  private async searchContacts(params: MCPSearchContactsParams): Promise<any> {
+    try {
+      const searchQuery = params.email || params.phone || params.query;
       
-      console.log('[Contact Tools] First contact ID:', firstContact.id);
-    } else {
-      console.log('[Contact Tools] No contacts found');
-    }
+      if (!searchQuery) {
+        throw new Error('At least one search parameter (query, email, or phone) is required');
+      }
 
-    return result;
-  } catch (error) {
-    console.error('[Contact Tools] Search error:', error);
-    throw new Error(`Failed to search contacts: ${error instanceof Error ? error.message : String(error)}`);
+      console.log('[Contact Tools] Searching contacts with query:', searchQuery);
+
+      const response = await this.ghlClient.searchContacts({
+        locationId: this.ghlClient.getConfig().locationId,
+        query: searchQuery,
+        limit: params.limit || 25
+      });
+
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Failed to search contacts');
+      }
+
+      const data = response.data || { contacts: [], total: 0 };
+      const contacts = data.contacts || [];
+      
+      console.log(`[Contact Tools] Found ${contacts.length} contacts`);
+
+      const result: any = {
+        success: true,
+        contacts: contacts,
+        total: data.total || 0,
+        message: `Found ${data.total || 0} contacts`
+      };
+
+      if (contacts.length > 0) {
+        const firstContact = contacts[0];
+        result.contactId = firstContact.id;
+        result.id = firstContact.id;
+        result.email = firstContact.email;
+        result.phone = firstContact.phone;
+        result.firstName = firstContact.firstName;
+        result.lastName = firstContact.lastName;
+        result.fullName = `${firstContact.firstName || ''} ${firstContact.lastName || ''}`.trim();
+        result.tags = firstContact.tags || [];
+        
+        console.log('[Contact Tools] First contact ID:', firstContact.id);
+      } else {
+        console.log('[Contact Tools] No contacts found');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[Contact Tools] Search error:', error);
+      throw new Error(`Failed to search contacts: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
-}
 
   /**
- * Get contact by ID with enhanced validation
- */
-private async getContact(contactId: string): Promise<any> {
-  try {
-    // Validate contactId
-    if (!contactId || contactId === 'undefined' || contactId === 'null') {
-      throw new Error('Valid contactId is required. Please use search_contacts first to get the contactId, then use that contactId here.');
+   * Get contact by ID with validation to prevent undefined errors
+   */
+  private async getContact(contactId: string): Promise<any> {
+    try {
+      if (!contactId || contactId === 'undefined' || contactId === 'null' || contactId.trim() === '') {
+        return {
+          success: false,
+          error: 'Invalid contactId provided',
+          message: 'Valid contactId is required. Use search_contacts first to get contactId, then use that ID here.'
+        };
+      }
+
+      console.log('[Contact Tools] Getting contact with ID:', contactId);
+
+      const response = await this.ghlClient.getContact(contactId);
+
+      if (!response.success) {
+        console.error('[Contact Tools] Failed to get contact:', response.error);
+        return {
+          success: false,
+          error: response.error?.message || 'Contact not found',
+          message: `Could not find contact with ID: ${contactId}. The contact may have been deleted or the ID is incorrect.`
+        };
+      }
+
+      console.log('[Contact Tools] Contact retrieved successfully');
+
+      return {
+        success: true,
+        contact: response.data,
+        contactId: response.data?.id,
+        email: response.data?.email,
+        phone: response.data?.phone,
+        firstName: response.data?.firstName,
+        lastName: response.data?.lastName,
+        fullName: `${response.data?.firstName || ''} ${response.data?.lastName || ''}`.trim(),
+        tags: response.data?.tags || [],
+        message: 'Contact retrieved successfully'
+      };
+    } catch (error) {
+      console.error('[Contact Tools] Get contact error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Failed to get contact. Please verify the contactId is correct.'
+      };
     }
-
-    console.log('[Contact Tools] Getting contact:', contactId);
-
-    const response = await this.ghlClient.getContact(contactId);
-
-    if (!response.success) {
-      throw new Error(`Failed to get contact: ${response.error?.message || 'Unknown error'}`);
-    }
-
-    console.log('[Contact Tools] Contact retrieved successfully');
-
-    return {
-      success: true,
-      contact: response.data,
-      contactId: response.data?.id,
-      email: response.data?.email,
-      phone: response.data?.phone,
-      firstName: response.data?.firstName,
-      lastName: response.data?.lastName,
-      message: 'Contact retrieved successfully'
-    };
-  } catch (error) {
-    console.error('[Contact Tools] Get contact error:', error);
-    throw new Error(`Failed to get contact: ${error instanceof Error ? error.message : String(error)}`);
   }
-}
+
+  private async updateContact(params: MCPUpdateContactParams): Promise<any> {
+    try {
+      const response = await this.ghlClient.updateContact(params.contactId, {
+        firstName: params.firstName,
+        lastName: params.lastName,
+        email: params.email,
+        phone: params.phone,
+        tags: params.tags
+      });
+
+      if (!response.success) {
+        throw new Error(`Failed to update contact: ${response.error?.message || 'Unknown error'}`);
+      }
+
+      return {
+        success: true,
+        contact: response.data,
+        message: 'Contact updated successfully'
+      };
+    } catch (error) {
+      throw new Error(`Failed to update contact: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
 
   private async deleteContact(contactId: string): Promise<any> {
     try {
@@ -1004,14 +1037,8 @@ private async getContact(contactId: string): Promise<any> {
     return response.data!;
   }
 
-  /**
-   * FIXED: Get duplicate contact using query parameter search
-   * Previously used getDuplicateContact API which doesn't exist
-   * Now uses searchContacts with limit=1 for faster duplicate detection
-   */
   private async getDuplicateContact(params: MCPGetDuplicateContactParams): Promise<GHLContact | null> {
     try {
-      // Use search with email/phone through query parameter
       const searchQuery = params.email || params.phone;
       
       if (!searchQuery) {
@@ -1020,8 +1047,8 @@ private async getContact(contactId: string): Promise<any> {
 
       const response = await this.ghlClient.searchContacts({
         locationId: this.ghlClient.getConfig().locationId,
-        query: searchQuery, // ✅ FIXED: Use query parameter
-        limit: 1 // Only need first match
+        query: searchQuery,
+        limit: 1
       });
 
       if (!response.success) {
@@ -1030,7 +1057,6 @@ private async getContact(contactId: string): Promise<any> {
 
       const data = response.data || { contacts: [] };
       
-      // Return first contact if found, null otherwise
       if (data.contacts && data.contacts.length > 0) {
         return data.contacts[0];
       }
