@@ -692,84 +692,104 @@ export class ContactTools {
   }
 
   /**
-   * FIXED: Search contacts using query parameter for email/phone searches
-   * GHL API /contacts/search expects "query" parameter, not separate email/phone filters
-   */
-  private async searchContacts(params: MCPSearchContactsParams): Promise<any> {
-    try {
-      // Priority: email > phone > query
-      // GHL API's query parameter searches across all text fields including email and phone
-      const searchQuery = params.email || params.phone || params.query;
+ * FIXED: Search contacts with enhanced response structure for AI
+ * Returns contactId on top level for easy access by AI agents
+ */
+private async searchContacts(params: MCPSearchContactsParams): Promise<any> {
+  try {
+    // Priority: email > phone > query
+    // GHL API's query parameter searches across all text fields including email and phone
+    const searchQuery = params.email || params.phone || params.query;
+    
+    // Validate that at least one search parameter is provided
+    if (!searchQuery) {
+      throw new Error('At least one search parameter (query, email, or phone) is required');
+    }
+
+    console.log('[Contact Tools] Searching contacts with query:', searchQuery);
+
+    const response = await this.ghlClient.searchContacts({
+      locationId: this.ghlClient.getConfig().locationId,
+      query: searchQuery,
+      limit: params.limit || 25
+    });
+
+    if (!response.success) {
+      const errorMsg = typeof response.error === 'string' ? response.error : 'Failed to search contacts';
+      throw new Error(errorMsg);
+    }
+
+    const data = response.data || { contacts: [], total: 0 };
+    const contacts = data.contacts || [];
+    
+    console.log(`[Contact Tools] Found ${contacts.length} contacts`);
+
+    // Build response with first contact details on top level for easy AI access
+    const result: any = {
+      success: true,
+      contacts: contacts,
+      total: data.total || 0,
+      message: `Found ${data.total || 0} contacts`
+    };
+
+    // If contacts found, add first contact details to top level for easy access
+    if (contacts.length > 0) {
+      const firstContact = contacts[0];
+      result.contactId = firstContact.id;
+      result.email = firstContact.email;
+      result.phone = firstContact.phone;
+      result.firstName = firstContact.firstName;
+      result.lastName = firstContact.lastName;
+      result.fullName = `${firstContact.firstName || ''} ${firstContact.lastName || ''}`.trim();
+      result.tags = firstContact.tags || [];
       
-      // Validate that at least one search parameter is provided
-      if (!searchQuery) {
-        throw new Error('At least one search parameter (query, email, or phone) is required');
-      }
-
-      const response = await this.ghlClient.searchContacts({
-        locationId: this.ghlClient.getConfig().locationId,
-        query: searchQuery, // ✅ FIXED: Use query parameter for all searches
-        limit: params.limit || 25
-      });
-
-      if (!response.success) {
-        const errorMsg = typeof response.error === 'string' ? response.error : 'Failed to search contacts';
-        throw new Error(errorMsg);
-      }
-
-      const data = response.data || { contacts: [], total: 0 };
-      return {
-        success: true,
-        contacts: data.contacts || [],
-        total: data.total || 0,
-        message: `Found ${data.total || 0} contacts`
-      };
-    } catch (error) {
-      throw new Error(`Failed to search contacts: ${error instanceof Error ? error.message : String(error)}`);
+      console.log('[Contact Tools] First contact ID:', firstContact.id);
+    } else {
+      console.log('[Contact Tools] No contacts found');
     }
+
+    return result;
+  } catch (error) {
+    console.error('[Contact Tools] Search error:', error);
+    throw new Error(`Failed to search contacts: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
 
-  private async getContact(contactId: string): Promise<any> {
-    try {
-      const response = await this.ghlClient.getContact(contactId);
-
-      if (!response.success) {
-        throw new Error(`Failed to get contact: ${response.error?.message || 'Unknown error'}`);
-      }
-
-      return {
-        success: true,
-        contact: response.data,
-        message: 'Contact retrieved successfully'
-      };
-    } catch (error) {
-      throw new Error(`Failed to get contact: ${error instanceof Error ? error.message : String(error)}`);
+  /**
+ * Get contact by ID with enhanced validation
+ */
+private async getContact(contactId: string): Promise<any> {
+  try {
+    // Validate contactId
+    if (!contactId || contactId === 'undefined' || contactId === 'null') {
+      throw new Error('Valid contactId is required. Please use search_contacts first to get the contactId, then use that contactId here.');
     }
-  }
 
-  private async updateContact(params: MCPUpdateContactParams): Promise<any> {
-    try {
-      const response = await this.ghlClient.updateContact(params.contactId, {
-        firstName: params.firstName,
-        lastName: params.lastName,
-        email: params.email,
-        phone: params.phone,
-        tags: params.tags
-      });
+    console.log('[Contact Tools] Getting contact:', contactId);
 
-      if (!response.success) {
-        throw new Error(`Failed to update contact: ${response.error?.message || 'Unknown error'}`);
-      }
+    const response = await this.ghlClient.getContact(contactId);
 
-      return {
-        success: true,
-        contact: response.data,
-        message: 'Contact updated successfully'
-      };
-    } catch (error) {
-      throw new Error(`Failed to update contact: ${error instanceof Error ? error.message : String(error)}`);
+    if (!response.success) {
+      throw new Error(`Failed to get contact: ${response.error?.message || 'Unknown error'}`);
     }
+
+    console.log('[Contact Tools] Contact retrieved successfully');
+
+    return {
+      success: true,
+      contact: response.data,
+      contactId: response.data?.id,
+      email: response.data?.email,
+      phone: response.data?.phone,
+      firstName: response.data?.firstName,
+      lastName: response.data?.lastName,
+      message: 'Contact retrieved successfully'
+    };
+  } catch (error) {
+    console.error('[Contact Tools] Get contact error:', error);
+    throw new Error(`Failed to get contact: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
 
   private async deleteContact(contactId: string): Promise<any> {
     try {
