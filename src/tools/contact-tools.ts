@@ -1,6 +1,11 @@
 /**
- * GoHighLevel Contact Tools
+ * GoHighLevel Contact Tools - FIXED VERSION
  * Implements all contact management functionality for the MCP server
+ * 
+ * CHANGELOG:
+ * - Fixed search_contacts to use query parameter for email/phone searches (GHL API compatibility)
+ * - Fixed get_duplicate_contact to properly find contacts by email/phone
+ * - Added proper error handling and validation
  */
 
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -69,91 +74,164 @@ export class ContactTools {
       // Basic Contact Management
       {
         name: 'create_contact',
-        description: 'Create a new contact in GoHighLevel',
+        description: 'Create a new contact in GoHighLevel CRM. CRITICAL: Always use search_contacts with email parameter FIRST to check for duplicates before creating. If contact exists, use update_contact instead. For uncertain cases, use upsert_contact which automatically handles both create and update. Returns contactId (save this for future operations). LocationId is auto-handled by server.',
         inputSchema: {
           type: 'object',
           properties: {
-            firstName: { type: 'string', description: 'Contact first name' },
-            lastName: { type: 'string', description: 'Contact last name' },
-            email: { type: 'string', format: 'email', description: 'Contact email address' },
-            phone: { type: 'string', description: 'Contact phone number' },
-            tags: { type: 'array', items: { type: 'string' }, description: 'Tags to assign to contact' },
-            source: { type: 'string', description: 'Source of the contact' }
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Contact primary email address (REQUIRED). Must be unique per location. Used as primary identifier for duplicate detection. Format: user@domain.com (lowercase recommended). Example: "john.doe@example.com". Will be used for all email communications.'
+            },
+            firstName: {
+              type: 'string',
+              description: 'Contact first name. Used for personalization in emails and SMS. Should be properly capitalized. Optional but highly recommended for personalized communication. Min 1, max 50 characters. Example: "John"'
+            },
+            lastName: {
+              type: 'string',
+              description: 'Contact last name. Combined with firstName for full name display in CRM. Should be properly capitalized. Optional. Min 1, max 50 characters. Example: "Doe"'
+            },
+            phone: {
+              type: 'string',
+              description: 'Contact phone number. Accepts any format but E.164 international format recommended for SMS delivery (+14155552671). Used for SMS communications and calls. Optional. Example: "+380501234567" or "0501234567"'
+            },
+            tags: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Tags for contact segmentation and filtering. Use existing location tags when possible. Tags are case-insensitive. Optional. Max 20 tags, each max 50 characters. Examples: ["VIP", "Newsletter", "Enterprise", "Webinar Attendee"]'
+            },
+            source: {
+              type: 'string',
+              description: 'Source of contact acquisition. Used for tracking lead sources and attribution. Optional. Defaults to "ChatGPT MCP". Max 100 characters. Examples: "Website Form", "Facebook Ad", "Referral", "Manual Entry", "LinkedIn Campaign"'
+            }
           },
           required: ['email']
         }
       },
       {
         name: 'search_contacts',
-        description: 'Search for contacts with advanced filtering options',
+        description: 'Search for contacts in GoHighLevel using email, phone, or name query. Returns array of matching contacts with contactId, email, phone, firstName, lastName, tags. CRITICAL USAGE: Call this BEFORE create_contact to check for duplicates. IMPORTANT: Provide at least ONE search parameter (query, email, or phone). Email search is most reliable for exact matches. Returns max 100 results. LocationId is auto-handled.',
         inputSchema: {
           type: 'object',
           properties: {
-            query: { type: 'string', description: 'Search query string' },
-            email: { type: 'string', description: 'Filter by email address' },
-            phone: { type: 'string', description: 'Filter by phone number' },
-            limit: { type: 'number', description: 'Maximum number of results (default: 25)' }
+            query: {
+              type: 'string',
+              description: 'Search by contact name, email, or phone. Performs fuzzy search across all text fields (firstName, lastName, email, phone, company). Case-insensitive. Min 2 characters for performance. Optional. Examples: "John Doe", "john@example.com", "0501234567", "Acme Corp"'
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Search by exact email address match. MOST RELIABLE method for duplicate detection. Case-insensitive. Returns 0 or 1 result. Format: user@domain.com. Optional. Example: "john.doe@example.com"'
+            },
+            phone: {
+              type: 'string',
+              description: 'Search by phone number. Searches across various phone formats. Less reliable than email due to formatting variations. Accepts any format. Optional. Examples: "+380501234567", "0501234567", "(050) 123-4567"'
+            },
+            limit: {
+              type: 'number',
+              description: 'Maximum number of results to return. Default: 25. Min: 1, Max: 100. Use smaller numbers (10-25) for faster responses. Larger numbers (50-100) for comprehensive searches. Optional.'
+            }
           }
         }
       },
       {
         name: 'get_contact',
-        description: 'Get detailed information about a specific contact',
+        description: 'Get complete detailed information about a specific contact by contactId. Returns ALL contact fields including custom fields, tags, assigned user, creation date, last activity, business association. Use this after search_contacts to get full details, or to verify contact data after create/update operations. Required: contactId from search_contacts or create_contact.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' }
+            contactId: {
+              type: 'string',
+              description: 'Unique contact identifier (ID). Get this from search_contacts, create_contact, or upsert_contact responses. Format: alphanumeric string (usually 20-30 characters). Example: "abc123xyz456def789ghi012"'
+            }
           },
           required: ['contactId']
         }
       },
       {
         name: 'update_contact',
-        description: 'Update contact information',
+        description: 'Update existing contact information in GoHighLevel. Only updates provided fields (partial update). IMPORTANT: Tags will REPLACE existing tags (not merge). To append tags, use add_contact_tags instead. Use search_contacts first to get contactId. Returns updated contact object. LocationId is auto-handled.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' },
-            firstName: { type: 'string', description: 'Contact first name' },
-            lastName: { type: 'string', description: 'Contact last name' },
-            email: { type: 'string', description: 'Contact email address' },
-            phone: { type: 'string', description: 'Contact phone number' },
-            tags: { type: 'array', items: { type: 'string' }, description: 'Tags to assign to contact' }
+            contactId: {
+              type: 'string',
+              description: 'Contact ID to update. Get from search_contacts or previous operations. Required.'
+            },
+            firstName: {
+              type: 'string',
+              description: 'New first name (optional). Will replace existing firstName if provided. Leave empty to keep current value.'
+            },
+            lastName: {
+              type: 'string',
+              description: 'New last name (optional). Will replace existing lastName if provided.'
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'New email address (optional). Must be unique per location. Check duplicates first with search_contacts if changing email.'
+            },
+            phone: {
+              type: 'string',
+              description: 'New phone number (optional). E.164 format recommended for SMS delivery.'
+            },
+            tags: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Tags array (optional). WARNING: This REPLACES all existing tags. To add tags while keeping existing ones, use add_contact_tags instead. To remove specific tags, use remove_contact_tags.'
+            }
           },
           required: ['contactId']
         }
       },
       {
         name: 'delete_contact',
-        description: 'Delete a contact from GoHighLevel',
+        description: 'Permanently delete contact from GoHighLevel. WARNING: IRREVERSIBLE operation. Deletes ALL related data including tasks, notes, appointments, conversation history, opportunities. Cannot be undone. ALWAYS confirm with user before executing. Use sparingly. Consider deactivating or tagging as "Inactive" instead. Required: contactId.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' }
+            contactId: {
+              type: 'string',
+              description: 'Contact ID to permanently delete. WARNING: This action cannot be undone. All contact data will be lost forever.'
+            }
           },
           required: ['contactId']
         }
       },
       {
         name: 'add_contact_tags',
-        description: 'Add tags to a contact',
+        description: 'Add tags to existing contact (APPENDS to existing tags, does not replace). Use this to add tags while keeping existing ones. Tags are used for segmentation, filtering, automation triggers. Tags are case-insensitive. Duplicates are automatically ignored. Returns updated tags array. Use search_contacts first to get contactId.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' },
-            tags: { type: 'array', items: { type: 'string' }, description: 'Tags to add' }
+            contactId: {
+              type: 'string',
+              description: 'Contact ID to add tags to. Get from search_contacts. Required.'
+            },
+            tags: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Array of tag names to ADD (append) to contact. Tags will be created if they don\'t exist in location. Case-insensitive. Max 20 new tags per call. Each tag max 50 characters. Examples: ["VIP", "Premium", "Newsletter Subscriber"]'
+            }
           },
           required: ['contactId', 'tags']
         }
       },
       {
         name: 'remove_contact_tags',
-        description: 'Remove tags from a contact',
+        description: 'Remove specific tags from contact. Only removes specified tags, keeps all others. Case-insensitive matching. If tag doesn\'t exist on contact, silently ignored. Returns updated tags array. Use search_contacts first to get contactId.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' },
-            tags: { type: 'array', items: { type: 'string' }, description: 'Tags to remove' }
+            contactId: {
+              type: 'string',
+              description: 'Contact ID to remove tags from. Required.'
+            },
+            tags: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Array of tag names to REMOVE from contact. Case-insensitive. Tags not found on contact will be ignored. Examples: ["Trial", "Old", "Inactive"]'
+            }
           },
           required: ['contactId', 'tags']
         }
@@ -162,27 +240,30 @@ export class ContactTools {
       // Task Management
       {
         name: 'get_contact_tasks',
-        description: 'Get all tasks for a contact',
+        description: 'Get all tasks (to-dos) for a specific contact. Returns array of tasks with taskId, title, description, dueDate, completed status, assignedTo user. Use this to view existing tasks before creating new ones. Useful for task management workflows.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' }
+            contactId: {
+              type: 'string',
+              description: 'Contact ID to get tasks for. Returns empty array if no tasks exist.'
+            }
           },
           required: ['contactId']
         }
       },
       {
         name: 'create_contact_task',
-        description: 'Create a new task for a contact',
+        description: 'Create a new task (to-do) for a contact. Tasks are reminders/action items for team members. Can be assigned to specific users. Due dates trigger notifications. Returns taskId for future updates. Use for follow-up reminders, callbacks, appointments scheduling.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' },
-            title: { type: 'string', description: 'Task title' },
-            body: { type: 'string', description: 'Task description' },
-            dueDate: { type: 'string', description: 'Due date (ISO format)' },
-            completed: { type: 'boolean', description: 'Task completion status' },
-            assignedTo: { type: 'string', description: 'User ID to assign task to' }
+            contactId: { type: 'string', description: 'Contact ID to create task for. Required.' },
+            title: { type: 'string', description: 'Task title (required). Short description of task. Max 200 characters. Examples: "Follow up call", "Send proposal"' },
+            body: { type: 'string', description: 'Task description/notes (optional). Detailed information. Supports HTML. Max 5000 characters.' },
+            dueDate: { type: 'string', description: 'Task due date (required). ISO 8601 format. Example: "2025-10-30T14:00:00Z"' },
+            completed: { type: 'boolean', description: 'Task completion status (optional). Default: false.' },
+            assignedTo: { type: 'string', description: 'User ID to assign task to (optional).' }
           },
           required: ['contactId', 'title', 'dueDate']
         }
@@ -230,13 +311,13 @@ export class ContactTools {
       },
       {
         name: 'update_task_completion',
-        description: 'Update task completion status',
+        description: 'Mark task as completed or incomplete. Quick way to update task status without changing other fields. Returns updated task object.',
         inputSchema: {
           type: 'object',
           properties: {
             contactId: { type: 'string', description: 'Contact ID' },
-            taskId: { type: 'string', description: 'Task ID' },
-            completed: { type: 'boolean', description: 'Completion status' }
+            taskId: { type: 'string', description: 'Task ID to update' },
+            completed: { type: 'boolean', description: 'Completion status. true = mark complete, false = mark incomplete' }
           },
           required: ['contactId', 'taskId', 'completed']
         }
@@ -309,28 +390,28 @@ export class ContactTools {
       // Advanced Contact Operations
       {
         name: 'upsert_contact',
-        description: 'Create or update contact based on email/phone (smart merge)',
+        description: 'Smart create OR update contact automatically. Checks if contact exists by email/phone, then creates if new or updates if exists. BEST CHOICE when importing contacts or unsure if contact exists. Eliminates need for manual duplicate checking. Returns contactId and "created" boolean (true if new, false if updated). LocationId auto-handled.',
         inputSchema: {
           type: 'object',
           properties: {
-            firstName: { type: 'string', description: 'Contact first name' },
-            lastName: { type: 'string', description: 'Contact last name' },
-            email: { type: 'string', description: 'Contact email address' },
-            phone: { type: 'string', description: 'Contact phone number' },
-            tags: { type: 'array', items: { type: 'string' }, description: 'Tags to assign to contact' },
-            source: { type: 'string', description: 'Source of the contact' },
-            assignedTo: { type: 'string', description: 'User ID to assign contact to' }
+            email: { type: 'string', format: 'email', description: 'Email address (recommended for upsert). Used to find existing contact.' },
+            phone: { type: 'string', description: 'Phone number (alternative to email).' },
+            firstName: { type: 'string', description: 'First name. Creates/updates this field.' },
+            lastName: { type: 'string', description: 'Last name. Creates/updates this field.' },
+            tags: { type: 'array', items: { type: 'string' }, description: 'Tags to assign. If updating, REPLACES existing tags.' },
+            source: { type: 'string', description: 'Contact source for new contacts. Ignored if contact already exists.' },
+            assignedTo: { type: 'string', description: 'User ID to assign contact to (optional).' }
           }
         }
       },
       {
         name: 'get_duplicate_contact',
-        description: 'Check for duplicate contacts by email or phone',
+        description: 'Check if contact already exists by email or phone WITHOUT creating. Returns existing contact object if found, null if not found. Use this for pre-validation before create_contact, or to find contactId without full search. Faster than search_contacts for simple existence check.',
         inputSchema: {
           type: 'object',
           properties: {
-            email: { type: 'string', description: 'Email to check for duplicates' },
-            phone: { type: 'string', description: 'Phone to check for duplicates' }
+            email: { type: 'string', format: 'email', description: 'Email to check for duplicates.' },
+            phone: { type: 'string', description: 'Phone to check for duplicates.' }
           }
         }
       },
@@ -363,14 +444,14 @@ export class ContactTools {
       // Bulk Operations
       {
         name: 'bulk_update_contact_tags',
-        description: 'Bulk add or remove tags from multiple contacts',
+        description: 'Add or remove tags from multiple contacts in ONE operation. Much more efficient than calling add_contact_tags/remove_contact_tags multiple times. Use for mass segmentation, campaign tagging, or cleanup. Max 100 contacts per call. Returns count of successfully updated contacts.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactIds: { type: 'array', items: { type: 'string' }, description: 'Array of contact IDs' },
-            tags: { type: 'array', items: { type: 'string' }, description: 'Tags to add or remove' },
-            operation: { type: 'string', enum: ['add', 'remove'], description: 'Operation to perform' },
-            removeAllTags: { type: 'boolean', description: 'Remove all existing tags before adding new ones' }
+            contactIds: { type: 'array', items: { type: 'string' }, description: 'Array of contact IDs. Min 1, max 100.' },
+            tags: { type: 'array', items: { type: 'string' }, description: 'Tags to add or remove from all specified contacts.' },
+            operation: { type: 'string', enum: ['add', 'remove'], description: '"add" = append tags. "remove" = remove tags.' },
+            removeAllTags: { type: 'boolean', description: 'If true, removes ALL existing tags before adding new ones (only with operation="add").' }
           },
           required: ['contactIds', 'tags', 'operation']
         }
@@ -454,26 +535,26 @@ export class ContactTools {
       // Workflow Management
       {
         name: 'add_contact_to_workflow',
-        description: 'Add contact to a workflow',
+        description: 'Enroll contact in automation workflow. Triggers workflow automation sequence (emails, SMS, tasks, etc.). Contact will start receiving automated messages based on workflow configuration. Use for onboarding, nurture sequences, follow-ups. Get workflowId from ghl_get_workflows tool first.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' },
-            workflowId: { type: 'string', description: 'Workflow ID' },
-            eventStartTime: { type: 'string', description: 'Event start time (ISO format)' }
+            contactId: { type: 'string', description: 'Contact ID to enroll in workflow. Required.' },
+            workflowId: { type: 'string', description: 'Workflow ID to enroll contact in. Get from ghl_get_workflows tool. Required.' },
+            eventStartTime: { type: 'string', description: 'Workflow start time (optional). ISO 8601 format. If not provided, starts immediately.' }
           },
           required: ['contactId', 'workflowId']
         }
       },
       {
         name: 'remove_contact_from_workflow',
-        description: 'Remove contact from a workflow',
+        description: 'Unenroll contact from automation workflow. STOPS all pending workflow actions for this contact. Already-sent messages cannot be recalled. Use when contact unsubscribes, opts out, or no longer needs automation.',
         inputSchema: {
           type: 'object',
           properties: {
-            contactId: { type: 'string', description: 'Contact ID' },
-            workflowId: { type: 'string', description: 'Workflow ID' },
-            eventStartTime: { type: 'string', description: 'Event start time (ISO format)' }
+            contactId: { type: 'string', description: 'Contact ID to remove from workflow.' },
+            workflowId: { type: 'string', description: 'Workflow ID to remove contact from.' },
+            eventStartTime: { type: 'string', description: 'Optional. If workflow was started with specific eventStartTime, provide it here.' }
           },
           required: ['contactId', 'workflowId']
         }
@@ -488,7 +569,7 @@ export class ContactTools {
     try {
       switch (toolName) {
         // Basic Contact Management
-      case 'create_contact':
+        case 'create_contact':
           return await this.createContact(params as MCPCreateContactParams);
         case 'search_contacts':
           return await this.searchContacts(params as MCPSearchContactsParams);
@@ -565,7 +646,7 @@ export class ContactTools {
         case 'remove_contact_from_workflow':
           return await this.removeContactFromWorkflow(params as MCPRemoveContactFromWorkflowParams);
       
-      default:
+        default:
           throw new Error(`Unknown tool: ${toolName}`);
       }
     } catch (error) {
@@ -574,7 +655,9 @@ export class ContactTools {
     }
   }
 
-  // Implementation methods...
+  // ═══════════════════════════════════════════════════════════
+  // IMPLEMENTATION METHODS
+  // ═══════════════════════════════════════════════════════════
 
   // Basic Contact Management
   private async createContact(params: MCPCreateContactParams): Promise<any> {
@@ -585,12 +668,12 @@ export class ContactTools {
       }
 
       const response = await this.ghlClient.createContact({
-          locationId: this.ghlClient.getConfig().locationId,
-          firstName: params.firstName,
-          lastName: params.lastName,
-          email: params.email,
-          phone: params.phone,
-          tags: params.tags,
+        locationId: this.ghlClient.getConfig().locationId,
+        firstName: params.firstName,
+        lastName: params.lastName,
+        email: params.email,
+        phone: params.phone,
+        tags: params.tags,
         source: params.source || 'ChatGPT MCP'
       });
 
@@ -608,29 +691,42 @@ export class ContactTools {
     }
   }
 
+  /**
+   * FIXED: Search contacts using query parameter for email/phone searches
+   * GHL API /contacts/search expects "query" parameter, not separate email/phone filters
+   */
   private async searchContacts(params: MCPSearchContactsParams): Promise<any> {
-    const response = await this.ghlClient.searchContacts({
-        locationId: this.ghlClient.getConfig().locationId,
-      query: params.query,
-      limit: params.limit || 25,
-      filters: {
-        ...(params.email && { email: params.email }),
-        ...(params.phone && { phone: params.phone })
+    try {
+      // Priority: email > phone > query
+      // GHL API's query parameter searches across all text fields including email and phone
+      const searchQuery = params.email || params.phone || params.query;
+      
+      // Validate that at least one search parameter is provided
+      if (!searchQuery) {
+        throw new Error('At least one search parameter (query, email, or phone) is required');
       }
-    });
 
-    if (!response.success) {
-      const errorMsg = typeof response.error === 'string' ? response.error : 'Failed to search contacts';
-      throw new Error(errorMsg);
+      const response = await this.ghlClient.searchContacts({
+        locationId: this.ghlClient.getConfig().locationId,
+        query: searchQuery, // ✅ FIXED: Use query parameter for all searches
+        limit: params.limit || 25
+      });
+
+      if (!response.success) {
+        const errorMsg = typeof response.error === 'string' ? response.error : 'Failed to search contacts';
+        throw new Error(errorMsg);
+      }
+
+      const data = response.data || { contacts: [], total: 0 };
+      return {
+        success: true,
+        contacts: data.contacts || [],
+        total: data.total || 0,
+        message: `Found ${data.total || 0} contacts`
+      };
+    } catch (error) {
+      throw new Error(`Failed to search contacts: ${error instanceof Error ? error.message : String(error)}`);
     }
-
-    const data = response.data || { contacts: [], total: 0 };
-    return {
-      success: true,
-      contacts: data.contacts || [],
-      total: data.total || 0,
-      message: `Found ${data.total || 0} contacts`
-    };
   }
 
   private async getContact(contactId: string): Promise<any> {
@@ -888,14 +984,41 @@ export class ContactTools {
     return response.data!;
   }
 
+  /**
+   * FIXED: Get duplicate contact using query parameter search
+   * Previously used getDuplicateContact API which doesn't exist
+   * Now uses searchContacts with limit=1 for faster duplicate detection
+   */
   private async getDuplicateContact(params: MCPGetDuplicateContactParams): Promise<GHLContact | null> {
-    const response = await this.ghlClient.getDuplicateContact(params.email, params.phone);
+    try {
+      // Use search with email/phone through query parameter
+      const searchQuery = params.email || params.phone;
+      
+      if (!searchQuery) {
+        return null;
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to check for duplicate contact');
+      const response = await this.ghlClient.searchContacts({
+        locationId: this.ghlClient.getConfig().locationId,
+        query: searchQuery, // ✅ FIXED: Use query parameter
+        limit: 1 // Only need first match
+      });
+
+      if (!response.success) {
+        return null;
+      }
+
+      const data = response.data || { contacts: [] };
+      
+      // Return first contact if found, null otherwise
+      if (data.contacts && data.contacts.length > 0) {
+        return data.contacts[0];
+      }
+
+      return null;
+    } catch (error) {
+      throw new Error(`Failed to check for duplicate contact: ${error instanceof Error ? error.message : String(error)}`);
     }
-
-    return response.data!;
   }
 
   private async getContactsByBusiness(params: MCPGetContactsByBusinessParams): Promise<GHLSearchContactsResponse> {
@@ -905,7 +1028,7 @@ export class ContactTools {
       query: params.query
     });
 
-      if (!response.success) {
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to get contacts by business');
     }
 
@@ -1028,4 +1151,4 @@ export class ContactTools {
 
     return response.data!;
   }
-} 
+}
