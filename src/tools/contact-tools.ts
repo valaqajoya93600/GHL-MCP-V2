@@ -158,16 +158,16 @@ async function retryWithExponentialBackoff<T>(
     try {
       return await fn();
     } catch (error: any) {
-      // FIXED: Safe access to status code from different error types
+      // FIXED: Безпечний доступ до коду статусу
       const statusCode = error.statusCode || error.status || 0;
       const isRetryable = [429, 500, 502, 503, 504].includes(statusCode);
       
-      // If we've reached max retries or the error is not retryable, throw it
+      // Якщо досягли максимуму спроб або помилка не підлягає повтору
       if (attempt >= maxRetries || !isRetryable) {
         throw error;
       }
       
-      // Wait for the delay and then increase it for next retry
+      // Чекаємо затримку і збільшуємо її для наступної спроби
       await new Promise(resolve => setTimeout(resolve, delay));
       delay *= factor;
       attempt++;
