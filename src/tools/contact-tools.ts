@@ -141,10 +141,10 @@ function isValidContactId(contactId: string): boolean {
   return typeof contactId === 'string' && contactId.trim() !== '';
 }
 
-// ═══════════════════════════════════════════════════════════
-// RETRY UTILITY WITH EXPONENTIAL BACKOFF - FIXED VERSION
-// ═══════════════════════════════════════════════════════════
-
+/**
+ * Retry utility with exponential backoff
+ * Automatically retries failed operations for transient errors
+ */
 async function retryWithExponentialBackoff<T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
@@ -158,16 +158,16 @@ async function retryWithExponentialBackoff<T>(
     try {
       return await fn();
     } catch (error: any) {
-      // FIXED: Безпечний доступ до коду статусу
+      // FIXED: Безпечний доступ до коду статусу з різних типів помилок
       const statusCode = error.statusCode || error.status || 0;
       const isRetryable = [429, 500, 502, 503, 504].includes(statusCode);
       
-      // Якщо досягли максимуму спроб або помилка не підлягає повтору
+      // Якщо досягли ліміту спроб або помилка не підлягає повтору - кидаємо її
       if (attempt >= maxRetries || !isRetryable) {
         throw error;
       }
       
-      // Чекаємо затримку і збільшуємо її для наступної спроби
+      // Чекаємо затримку перед наступною спробою
       await new Promise(resolve => setTimeout(resolve, delay));
       delay *= factor;
       attempt++;
