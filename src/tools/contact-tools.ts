@@ -13,6 +13,8 @@
  * - Standardized response structures
  * - Implemented type guards
  * - Added retry logic with exponential backoff
+ * - FIXED: APIError class now includes statusCode property
+ * - FIXED: retryWithExponentialBackoff now uses statusCode instead of status
  */
 
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -66,7 +68,10 @@ import {
   GHLFollowersResponse
 } from '../types/ghl-types.js';
 
-// Error classes for specific error types
+// ═══════════════════════════════════════════════════════════
+// ERROR CLASSES - FIXED VERSION
+// ═══════════════════════════════════════════════════════════
+
 class ValidationError extends Error {
   constructor(message: string) {
     super(message);
@@ -75,9 +80,14 @@ class ValidationError extends Error {
 }
 
 class APIError extends Error {
-  constructor(message: string) {
+  public statusCode?: number;
+  public details?: any;
+
+  constructor(message: string, statusCode?: number, details?: any) {
     super(message);
     this.name = 'APIError';
+    this.statusCode = statusCode;
+    this.details = details;
   }
 }
 
@@ -88,7 +98,10 @@ class NotFoundError extends Error {
   }
 }
 
-// Type guards
+// ═══════════════════════════════════════════════════════════
+// TYPE GUARDS
+// ═══════════════════════════════════════════════════════════
+
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -128,7 +141,10 @@ function isValidContactId(contactId: string): boolean {
   return typeof contactId === 'string' && contactId.trim() !== '';
 }
 
-// Retry utility with exponential backoff
+// ═══════════════════════════════════════════════════════════
+// RETRY UTILITY WITH EXPONENTIAL BACKOFF - FIXED VERSION
+// ═══════════════════════════════════════════════════════════
+
 async function retryWithExponentialBackoff<T>(
   fn: () => Promise<T>,
   maxRetries: number = 3,
@@ -142,8 +158,12 @@ async function retryWithExponentialBackoff<T>(
     try {
       return await fn();
     } catch (error: any) {
+      // FIXED: Safe access to status code from different error types
+      const statusCode = error.statusCode || error.status || 0;
+      const isRetryable = [429, 500, 502, 503, 504].includes(statusCode);
+      
       // If we've reached max retries or the error is not retryable, throw it
-      if (attempt >= maxRetries || (error.status && ![429, 500, 502, 503, 504].includes(error.status))) {
+      if (attempt >= maxRetries || !isRetryable) {
         throw error;
       }
       
@@ -154,6 +174,10 @@ async function retryWithExponentialBackoff<T>(
     }
   }
 }
+
+// ═══════════════════════════════════════════════════════════
+// CONTACT TOOLS CLASS
+// ═══════════════════════════════════════════════════════════
 
 /**
  * Contact Tools class
