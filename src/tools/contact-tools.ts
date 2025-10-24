@@ -1,13 +1,18 @@
 /**
  * GoHighLevel Contact Tools - PRODUCTION READY VERSION
  * Implements all contact management functionality for the MCP server
- * 
+ *
  * CHANGELOG:
  * - Fixed search_contacts to use query parameter for email/phone searches
  * - Fixed get_contact with proper contactId validation
  * - Enhanced search_contacts response with contactId on top level
  * - Added comprehensive error handling and logging
  * - Preserved get_contact tool with proper workflow
+ * - Fixed "successed" typos to "succeeded"
+ * - Added input validation to all methods
+ * - Standardized response structures
+ * - Implemented type guards
+ * - Added retry logic with exponential backoff
  */
 
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -60,6 +65,95 @@ import {
   GHLBulkBusinessResponse,
   GHLFollowersResponse
 } from '../types/ghl-types.js';
+
+// Error classes for specific error types
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+class APIError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'APIError';
+  }
+}
+
+class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
+// Type guards
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+function isValidCreateContactParams(params: any): params is MCPCreateContactParams {
+  return params && 
+         typeof params.email === 'string' && 
+         isValidEmail(params.email) &&
+         (params.firstName === undefined || typeof params.firstName === 'string') &&
+         (params.lastName === undefined || typeof params.lastName === 'string') &&
+         (params.phone === undefined || typeof params.phone === 'string') &&
+         (params.tags === undefined || Array.isArray(params.tags)) &&
+         (params.source === undefined || typeof params.source === 'string');
+}
+
+function isValidSearchContactsParams(params: any): params is MCPSearchContactsParams {
+  return params && 
+         (typeof params.query === 'string' || 
+          typeof params.email === 'string' || 
+          typeof params.phone === 'string') &&
+         (params.limit === undefined || typeof params.limit === 'number');
+}
+
+function isValidUpdateContactParams(params: any): params is MCPUpdateContactParams {
+  return params && 
+         typeof params.contactId === 'string' &&
+         params.contactId.trim() !== '' &&
+         (params.firstName === undefined || typeof params.firstName === 'string') &&
+         (params.lastName === undefined || typeof params.lastName === 'string') &&
+         (params.email === undefined || (typeof params.email === 'string' && isValidEmail(params.email))) &&
+         (params.phone === undefined || typeof params.phone === 'string') &&
+         (params.tags === undefined || Array.isArray(params.tags));
+}
+
+function isValidContactId(contactId: string): boolean {
+  return typeof contactId === 'string' && contactId.trim() !== '';
+}
+
+// Retry utility with exponential backoff
+async function retryWithExponentialBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  initialDelay: number = 1000,
+  factor: number = 2
+): Promise<T> {
+  let attempt = 0;
+  let delay = initialDelay;
+
+  while (true) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      // If we've reached max retries or the error is not retryable, throw it
+      if (attempt >= maxRetries || (error.status && ![429, 500, 502, 503, 504].includes(error.status))) {
+        throw error;
+      }
+      
+      // Wait for the delay and then increase it for next retry
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay *= factor;
+      attempt++;
+    }
+  }
+}
 
 /**
  * Contact Tools class
@@ -566,8 +660,11 @@ export class ContactTools {
 
   /**
    * Execute a contact tool with the given parameters
+   * @param toolName The name of the tool to execute
+   * @param params The parameters for the tool
+   * @returns Standardized response object
    */
-  async executeTool(toolName: string, params: any): Promise<any> {
+  async executeTool(toolName: string, params: any): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       switch (toolName) {
         // Basic Contact Management
@@ -647,13 +744,21 @@ export class ContactTools {
           return await this.addContactToWorkflow(params as MCPAddContactToWorkflowParams);
         case 'remove_contact_from_workflow':
           return await this.removeContactFromWorkflow(params as MCPRemoveContactFromWorkflowParams);
-      
+
         default:
-          throw new Error(`Unknown tool: ${toolName}`);
+          return {
+            success: false,
+            error: `Unknown tool: ${toolName}`
+          };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error executing contact tool ${toolName}:`, error);
-      throw error;
+      
+      // Return standardized error response
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred'
+      };
     }
   }
 
@@ -661,70 +766,93 @@ export class ContactTools {
   // IMPLEMENTATION METHODS
   // ═══════════════════════════════════════════════════════════
 
-  // Basic Contact Management
-  private async createContact(params: MCPCreateContactParams): Promise<any> {
+  /**
+   * Create a new contact in GoHighLevel CRM
+   * @param params Contact creation parameters
+   * @returns Standardized response with created contact data
+   */
+  private async createContact(params: MCPCreateContactParams): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      if (!params.email) {
-        throw new Error('Email is required');
+      // Validate input parameters
+      if (!isValidCreateContactParams(params)) {
+        throw new ValidationError('Invalid create contact parameters');
       }
 
-      const response = await this.ghlClient.createContact({
-        locationId: this.ghlClient.getConfig().locationId,
-        firstName: params.firstName,
-        lastName: params.lastName,
-        email: params.email,
-        phone: params.phone,
-        tags: params.tags,
-        source: params.source || 'ChatGPT MCP'
-      });
+      if (!params.email) {
+        throw new ValidationError('Email is required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.createContact({
+          locationId: this.ghlClient.getConfig().locationId,
+          firstName: params.firstName,
+          lastName: params.lastName,
+          email: params.email,
+          phone: params.phone,
+          tags: params.tags,
+          source: params.source || 'ChatGPT MCP'
+        })
+      );
 
       if (!response.success) {
-        throw new Error(`Failed to create contact: ${response.error || 'Unknown error'}`);
+        throw new APIError(`Failed to create contact: ${response.error || 'Unknown error'}`);
       }
 
       return {
         success: true,
-        contact: response.data,
-        message: 'Contact created successfully'
+        data: response.data,
+        error: undefined
       };
-    } catch (error) {
-      throw new Error(`Failed to create contact: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to create contact: ${error.message || String(error)}`);
     }
   }
 
   /**
-   * Search contacts with enhanced response - contactId on top level for AI
+   * Search contacts in GoHighLevel CRM
+   * @param params Search parameters
+   * @returns Standardized response with search results
    */
-  private async searchContacts(params: MCPSearchContactsParams): Promise<any> {
+  private async searchContacts(params: MCPSearchContactsParams): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
+      // Validate input parameters
+      if (!isValidSearchContactsParams(params)) {
+        throw new ValidationError('Invalid search contacts parameters');
+      }
+
       const searchQuery = params.email || params.phone || params.query;
-      
+
       if (!searchQuery) {
-        throw new Error('At least one search parameter (query, email, or phone) is required');
+        throw new ValidationError('At least one search parameter (query, email, or phone) is required');
       }
 
       console.log('[Contact Tools] Searching contacts with query:', searchQuery);
 
-      const response = await this.ghlClient.searchContacts({
-        locationId: this.ghlClient.getConfig().locationId,
-        query: searchQuery,
-        limit: params.limit || 25
-      });
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.searchContacts({
+          locationId: this.ghlClient.getConfig().locationId,
+          query: searchQuery,
+          limit: params.limit || 25
+        })
+      );
 
       if (!response.success) {
-        throw new Error(response.error?.message || 'Failed to search contacts');
+        throw new APIError(response.error?.message || 'Failed to search contacts');
       }
 
       const data = response.data || { contacts: [], total: 0 };
       const contacts = data.contacts || [];
-      
+
       console.log(`[Contact Tools] Found ${contacts.length} contacts`);
 
       const result: any = {
-        success: true,
         contacts: contacts,
-        total: data.total || 0,
-        message: `Found ${data.total || 0} contacts`
+        total: data.total || 0
       };
 
       if (contacts.length > 0) {
@@ -737,464 +865,1151 @@ export class ContactTools {
         result.lastName = firstContact.lastName;
         result.fullName = `${firstContact.firstName || ''} ${firstContact.lastName || ''}`.trim();
         result.tags = firstContact.tags || [];
-        
+
         console.log('[Contact Tools] First contact ID:', firstContact.id);
       } else {
         console.log('[Contact Tools] No contacts found');
       }
 
-      return result;
-    } catch (error) {
+      return {
+        success: true,
+        data: result,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
       console.error('[Contact Tools] Search error:', error);
-      throw new Error(`Failed to search contacts: ${error instanceof Error ? error.message : String(error)}`);
+      throw new APIError(`Failed to search contacts: ${error.message || String(error)}`);
     }
   }
 
   /**
-   * Get contact by ID with validation to prevent undefined errors
+   * Get detailed information about a specific contact
+   * @param contactId The ID of the contact to retrieve
+   * @returns Standardized response with contact data
    */
-  private async getContact(contactId: string): Promise<any> {
+  private async getContact(contactId: string): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      if (!contactId || contactId === 'undefined' || contactId === 'null' || contactId.trim() === '') {
-        return {
-          success: false,
-          error: 'Invalid contactId provided',
-          message: 'Valid contactId is required. Use search_contacts first to get contactId, then use that ID here.'
-        };
+      // Validate contactId
+      if (!isValidContactId(contactId)) {
+        throw new ValidationError('Valid contactId is required');
       }
 
       console.log('[Contact Tools] Getting contact with ID:', contactId);
 
-      const response = await this.ghlClient.getContact(contactId);
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.getContact(contactId)
+      );
 
       if (!response.success) {
         console.error('[Contact Tools] Failed to get contact:', response.error);
-        return {
-          success: false,
-          error: response.error?.message || 'Contact not found',
-          message: `Could not find contact with ID: ${contactId}. The contact may have been deleted or the ID is incorrect.`
-        };
+        if (response.error?.status === 404) {
+          throw new NotFoundError(`Contact with ID ${contactId} not found`);
+        }
+        throw new APIError(response.error?.message || 'Failed to retrieve contact');
       }
 
       console.log('[Contact Tools] Contact retrieved successfully');
 
       return {
         success: true,
-        contact: response.data,
-        contactId: response.data?.id,
-        email: response.data?.email,
-        phone: response.data?.phone,
-        firstName: response.data?.firstName,
-        lastName: response.data?.lastName,
-        fullName: `${response.data?.firstName || ''} ${response.data?.lastName || ''}`.trim(),
-        tags: response.data?.tags || [],
-        message: 'Contact retrieved successfully'
+        data: {
+          contact: response.data,
+          contactId: response.data?.id,
+          email: response.data?.email,
+          phone: response.data?.phone,
+          firstName: response.data?.firstName,
+          lastName: response.data?.lastName,
+          fullName: `${response.data?.firstName || ''} ${response.data?.lastName || ''}`.trim(),
+          tags: response.data?.tags || []
+        },
+        error: undefined
       };
-    } catch (error) {
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError || error instanceof NotFoundError) {
+        throw error;
+      }
       console.error('[Contact Tools] Get contact error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        message: 'Failed to get contact. Please verify the contactId is correct.'
-      };
+      throw new APIError(`Failed to get contact: ${error.message || 'Unknown error'}`);
     }
   }
 
-  private async updateContact(params: MCPUpdateContactParams): Promise<any> {
+  /**
+   * Update existing contact information
+   * @param params Contact update parameters
+   * @returns Standardized response with updated contact data
+   */
+  private async updateContact(params: MCPUpdateContactParams): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      const response = await this.ghlClient.updateContact(params.contactId, {
-        firstName: params.firstName,
-        lastName: params.lastName,
-        email: params.email,
-        phone: params.phone,
-        tags: params.tags
-      });
+      // Validate input parameters
+      if (!isValidUpdateContactParams(params)) {
+        throw new ValidationError('Invalid update contact parameters');
+      }
+
+      if (!isValidContactId(params.contactId)) {
+        throw new ValidationError('Valid contactId is required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.updateContact(params.contactId, {
+          firstName: params.firstName,
+          lastName: params.lastName,
+          email: params.email,
+          phone: params.phone,
+          tags: params.tags
+        })
+      );
 
       if (!response.success) {
-        throw new Error(`Failed to update contact: ${response.error?.message || 'Unknown error'}`);
+        throw new APIError(`Failed to update contact: ${response.error?.message || 'Unknown error'}`);
       }
 
       return {
         success: true,
-        contact: response.data,
-        message: 'Contact updated successfully'
+        data: response.data,
+        error: undefined
       };
-    } catch (error) {
-      throw new Error(`Failed to update contact: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to update contact: ${error.message || String(error)}`);
     }
   }
 
-  private async deleteContact(contactId: string): Promise<any> {
+  /**
+   * Delete a contact from GoHighLevel CRM
+   * @param contactId The ID of the contact to delete
+   * @returns Standardized response indicating success or failure
+   */
+  private async deleteContact(contactId: string): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      const response = await this.ghlClient.deleteContact(contactId);
+      // Validate contactId
+      if (!isValidContactId(contactId)) {
+        throw new ValidationError('Valid contactId is required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.deleteContact(contactId)
+      );
 
       if (!response.success) {
-        throw new Error(`Failed to delete contact: ${response.error?.message || 'Unknown error'}`);
+        throw new APIError(`Failed to delete contact: ${response.error?.message || 'Unknown error'}`);
       }
 
       return {
         success: true,
-        message: 'Contact deleted successfully'
+        data: { message: 'Contact deleted successfully' },
+        error: undefined
       };
-    } catch (error) {
-      throw new Error(`Failed to delete contact: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to delete contact: ${error.message || String(error)}`);
     }
   }
 
-  private async addContactTags(params: MCPAddContactTagsParams): Promise<any> {
+  /**
+   * Add tags to an existing contact
+   * @param params Tag addition parameters
+   * @returns Standardized response with updated tags
+   */
+  private async addContactTags(params: MCPAddContactTagsParams): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      const response = await this.ghlClient.addContactTags(params.contactId, params.tags);
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !Array.isArray(params.tags)) {
+        throw new ValidationError('Invalid add contact tags parameters');
+      }
+
+      if (params.tags.length === 0) {
+        throw new ValidationError('At least one tag is required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.addContactTags(params.contactId, params.tags)
+      );
 
       if (!response.success) {
-        throw new Error(`Failed to add contact tags: ${response.error?.message || 'Unknown error'}`);
+        throw new APIError(`Failed to add contact tags: ${response.error?.message || 'Unknown error'}`);
       }
 
       return {
         success: true,
-        tags: response.data?.tags || [],
-        message: `Successfully added ${params.tags.length} tags to contact`
+        data: {
+          tags: response.data?.tags || [],
+          message: `Successfully added ${params.tags.length} tags to contact`
+        },
+        error: undefined
       };
-    } catch (error) {
-      throw new Error(`Failed to add contact tags: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to add contact tags: ${error.message || String(error)}`);
     }
   }
 
-  private async removeContactTags(params: MCPRemoveContactTagsParams): Promise<any> {
+  /**
+   * Remove specific tags from a contact
+   * @param params Tag removal parameters
+   * @returns Standardized response with updated tags
+   */
+  private async removeContactTags(params: MCPRemoveContactTagsParams): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      const response = await this.ghlClient.removeContactTags(params.contactId, params.tags);
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !Array.isArray(params.tags)) {
+        throw new ValidationError('Invalid remove contact tags parameters');
+      }
+
+      if (params.tags.length === 0) {
+        throw new ValidationError('At least one tag is required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.removeContactTags(params.contactId, params.tags)
+      );
 
       if (!response.success) {
-        throw new Error(`Failed to remove contact tags: ${response.error?.message || 'Unknown error'}`);
+        throw new APIError(`Failed to remove contact tags: ${response.error?.message || 'Unknown error'}`);
       }
 
       return {
         success: true,
-        tags: response.data?.tags || [],
-        message: `Successfully removed ${params.tags.length} tags from contact`
+        data: {
+          tags: response.data?.tags || [],
+          message: `Successfully removed ${params.tags.length} tags from contact`
+        },
+        error: undefined
       };
-    } catch (error) {
-      throw new Error(`Failed to remove contact tags: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to remove contact tags: ${error.message || String(error)}`);
     }
   }
 
-  // Task Management
-  private async getContactTasks(params: MCPGetContactTasksParams): Promise<GHLTask[]> {
-    const response = await this.ghlClient.getContactTasks(params.contactId);
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to get contact tasks');
-    }
-
-    return response.data!;
-  }
-
-  private async createContactTask(params: MCPCreateContactTaskParams): Promise<GHLTask> {
-    const response = await this.ghlClient.createContactTask(params.contactId, {
-      title: params.title,
-      body: params.body,
-      dueDate: params.dueDate,
-      completed: params.completed || false,
-      assignedTo: params.assignedTo
-    });
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to create contact task');
-    }
-
-    return response.data!;
-  }
-
-  private async getContactTask(params: MCPGetContactTaskParams): Promise<GHLTask> {
-    const response = await this.ghlClient.getContactTask(params.contactId, params.taskId);
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to get contact task');
-    }
-
-    return response.data!;
-  }
-
-  private async updateContactTask(params: MCPUpdateContactTaskParams): Promise<GHLTask> {
-    const response = await this.ghlClient.updateContactTask(params.contactId, params.taskId, {
-      title: params.title,
-      body: params.body,
-      dueDate: params.dueDate,
-      completed: params.completed,
-      assignedTo: params.assignedTo
-    });
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to update contact task');
-    }
-
-    return response.data!;
-  }
-
-  private async deleteContactTask(params: MCPDeleteContactTaskParams): Promise<{ succeded: boolean }> {
-    const response = await this.ghlClient.deleteContactTask(params.contactId, params.taskId);
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to delete contact task');
-    }
-
-    return response.data!;
-  }
-
-  private async updateTaskCompletion(params: MCPUpdateTaskCompletionParams): Promise<GHLTask> {
-    const response = await this.ghlClient.updateTaskCompletion(params.contactId, params.taskId, params.completed);
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to update task completion');
-    }
-
-    return response.data!;
-  }
-
-  // Note Management
-  private async getContactNotes(params: MCPGetContactNotesParams): Promise<GHLNote[]> {
-    const response = await this.ghlClient.getContactNotes(params.contactId);
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to get contact notes');
-    }
-
-    return response.data!;
-  }
-
-  private async createContactNote(params: MCPCreateContactNoteParams): Promise<GHLNote> {
-    const response = await this.ghlClient.createContactNote(params.contactId, {
-      body: params.body,
-      userId: params.userId
-    });
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to create contact note');
-    }
-
-    return response.data!;
-  }
-
-  private async getContactNote(params: MCPGetContactNoteParams): Promise<GHLNote> {
-    const response = await this.ghlClient.getContactNote(params.contactId, params.noteId);
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to get contact note');
-    }
-
-    return response.data!;
-  }
-
-  private async updateContactNote(params: MCPUpdateContactNoteParams): Promise<GHLNote> {
-    const response = await this.ghlClient.updateContactNote(params.contactId, params.noteId, {
-      body: params.body,
-      userId: params.userId
-    });
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to update contact note');
-    }
-
-    return response.data!;
-  }
-
-  private async deleteContactNote(params: MCPDeleteContactNoteParams): Promise<{ succeded: boolean }> {
-    const response = await this.ghlClient.deleteContactNote(params.contactId, params.noteId);
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to delete contact note');
-    }
-
-    return response.data!;
-  }
-
-  // Advanced Operations
-  private async upsertContact(params: MCPUpsertContactParams): Promise<GHLUpsertContactResponse> {
-    const response = await this.ghlClient.upsertContact({
-      locationId: this.ghlClient.getConfig().locationId,
-      firstName: params.firstName,
-      lastName: params.lastName,
-      name: params.name,
-      email: params.email,
-      phone: params.phone,
-      address1: params.address,
-      city: params.city,
-      state: params.state,
-      country: params.country,
-      postalCode: params.postalCode,
-      website: params.website,
-      timezone: params.timezone,
-      companyName: params.companyName,
-      tags: params.tags,
-      customFields: params.customFields,
-      source: params.source,
-      assignedTo: params.assignedTo
-    });
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to upsert contact');
-    }
-
-    return response.data!;
-  }
-
-  private async getDuplicateContact(params: MCPGetDuplicateContactParams): Promise<GHLContact | null> {
+  /**
+   * Get all tasks for a specific contact
+   * @param params Contact tasks retrieval parameters
+   * @returns Standardized response with array of tasks
+   */
+  private async getContactTasks(params: MCPGetContactTasksParams): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId)) {
+        throw new ValidationError('Valid contactId is required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.getContactTasks(params.contactId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to get contact tasks');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to get contact tasks: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Create a new task for a contact
+   * @param params Task creation parameters
+   * @returns Standardized response with created task data
+   */
+  private async createContactTask(params: MCPCreateContactTaskParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.title || !params.dueDate) {
+        throw new ValidationError('ContactId, title, and dueDate are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.createContactTask(params.contactId, {
+          title: params.title,
+          body: params.body,
+          dueDate: params.dueDate,
+          completed: params.completed || false,
+          assignedTo: params.assignedTo
+        })
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to create contact task');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to create contact task: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Get a specific task for a contact
+   * @param params Task retrieval parameters
+   * @returns Standardized response with task data
+   */
+  private async getContactTask(params: MCPGetContactTaskParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.taskId) {
+        throw new ValidationError('ContactId and taskId are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.getContactTask(params.contactId, params.taskId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to get contact task');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to get contact task: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Update a task for a contact
+   * @param params Task update parameters
+   * @returns Standardized response with updated task data
+   */
+  private async updateContactTask(params: MCPUpdateContactTaskParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.taskId) {
+        throw new ValidationError('ContactId and taskId are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.updateContactTask(params.contactId, params.taskId, {
+          title: params.title,
+          body: params.body,
+          dueDate: params.dueDate,
+          completed: params.completed,
+          assignedTo: params.assignedTo
+        })
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to update contact task');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to update contact task: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Delete a task for a contact
+   * @param params Task deletion parameters
+   * @returns Standardized response indicating success or failure
+   */
+  private async deleteContactTask(params: MCPDeleteContactTaskParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.taskId) {
+        throw new ValidationError('ContactId and taskId are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.deleteContactTask(params.contactId, params.taskId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to delete contact task');
+      }
+
+      return {
+        success: true,
+        data: { succeeded: response.data?.succeded || false },
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to delete contact task: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Update task completion status
+   * @param params Task completion update parameters
+   * @returns Standardized response with updated task data
+   */
+  private async updateTaskCompletion(params: MCPUpdateTaskCompletionParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.taskId || typeof params.completed !== 'boolean') {
+        throw new ValidationError('ContactId, taskId, and completed status are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.updateTaskCompletion(params.contactId, params.taskId, params.completed)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to update task completion');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to update task completion: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Get all notes for a contact
+   * @param params Contact notes retrieval parameters
+   * @returns Standardized response with array of notes
+   */
+  private async getContactNotes(params: MCPGetContactNotesParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId)) {
+        throw new ValidationError('Valid contactId is required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.getContactNotes(params.contactId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to get contact notes');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to get contact notes: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Create a new note for a contact
+   * @param params Note creation parameters
+   * @returns Standardized response with created note data
+   */
+  private async createContactNote(params: MCPCreateContactNoteParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.body) {
+        throw new ValidationError('ContactId and note body are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.createContactNote(params.contactId, {
+          body: params.body,
+          userId: params.userId
+        })
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to create contact note');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to create contact note: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Get a specific note for a contact
+   * @param params Note retrieval parameters
+   * @returns Standardized response with note data
+   */
+  private async getContactNote(params: MCPGetContactNoteParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.noteId) {
+        throw new ValidationError('ContactId and noteId are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.getContactNote(params.contactId, params.noteId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to get contact note');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to get contact note: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Update a note for a contact
+   * @param params Note update parameters
+   * @returns Standardized response with updated note data
+   */
+  private async updateContactNote(params: MCPUpdateContactNoteParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.noteId || !params.body) {
+        throw new ValidationError('ContactId, noteId, and body are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.updateContactNote(params.contactId, params.noteId, {
+          body: params.body,
+          userId: params.userId
+        })
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to update contact note');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to update contact note: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Delete a note for a contact
+   * @param params Note deletion parameters
+   * @returns Standardized response indicating success or failure
+   */
+  private async deleteContactNote(params: MCPDeleteContactNoteParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.noteId) {
+        throw new ValidationError('ContactId and noteId are required');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.deleteContactNote(params.contactId, params.noteId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to delete contact note');
+      }
+
+      return {
+        success: true,
+        data: { succeeded: response.data?.succeded || false },
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to delete contact note: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Create or update a contact based on email/phone existence
+   * @param params Contact upsert parameters
+   * @returns Standardized response with upsert result
+   */
+  private async upsertContact(params: MCPUpsertContactParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || (!params.email && !params.phone)) {
+        throw new ValidationError('Email or phone is required for upsert operation');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.upsertContact({
+          locationId: this.ghlClient.getConfig().locationId,
+          firstName: params.firstName,
+          lastName: params.lastName,
+          name: params.name,
+          email: params.email,
+          phone: params.phone,
+          address1: params.address,
+          city: params.city,
+          state: params.state,
+          country: params.country,
+          postalCode: params.postalCode,
+          website: params.website,
+          timezone: params.timezone,
+          companyName: params.companyName,
+          tags: params.tags,
+          customFields: params.customFields,
+          source: params.source,
+          assignedTo: params.assignedTo
+        })
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to upsert contact');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to upsert contact: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Check if a contact already exists by email or phone
+   * @param params Duplicate contact check parameters
+   * @returns Standardized response with existing contact data or null
+   */
+  private async getDuplicateContact(params: MCPGetDuplicateContactParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || (!params.email && !params.phone)) {
+        throw new ValidationError('Email or phone is required for duplicate check');
+      }
+
       const searchQuery = params.email || params.phone;
-      
+
       if (!searchQuery) {
-        return null;
+        return {
+          success: true,
+          data: null,
+          error: undefined
+        };
       }
 
-      const response = await this.ghlClient.searchContacts({
-        locationId: this.ghlClient.getConfig().locationId,
-        query: searchQuery,
-        limit: 1
-      });
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.searchContacts({
+          locationId: this.ghlClient.getConfig().locationId,
+          query: searchQuery,
+          limit: 1
+        })
+      );
 
       if (!response.success) {
-        return null;
+        throw new APIError('Failed to check for duplicate contact');
       }
 
       const data = response.data || { contacts: [] };
-      
-      if (data.contacts && data.contacts.length > 0) {
-        return data.contacts[0];
+
+      const contact = data.contacts && data.contacts.length > 0 ? data.contacts[0] : null;
+
+      return {
+        success: true,
+        data: contact,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to check for duplicate contact: ${error.message || String(error)}`);
+    }
+  }
+
+  /**
+   * Get contacts associated with a specific business
+   * @param params Business contacts retrieval parameters
+   * @returns Standardized response with contacts data
+   */
+  private async getContactsByBusiness(params: MCPGetContactsByBusinessParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !params.businessId) {
+        throw new ValidationError('BusinessId is required');
       }
 
-      return null;
-    } catch (error) {
-      throw new Error(`Failed to check for duplicate contact: ${error instanceof Error ? error.message : String(error)}`);
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.getContactsByBusiness(params.businessId, {
+          limit: params.limit,
+          skip: params.skip,
+          query: params.query
+        })
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to get contacts by business');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to get contacts by business: ${error.message || String(error)}`);
     }
   }
 
-  private async getContactsByBusiness(params: MCPGetContactsByBusinessParams): Promise<GHLSearchContactsResponse> {
-    const response = await this.ghlClient.getContactsByBusiness(params.businessId, {
-      limit: params.limit,
-      skip: params.skip,
-      query: params.query
-    });
+  /**
+   * Get all appointments for a contact
+   * @param params Contact appointments retrieval parameters
+   * @returns Standardized response with appointments data
+   */
+  private async getContactAppointments(params: MCPGetContactAppointmentsParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId)) {
+        throw new ValidationError('Valid contactId is required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to get contacts by business');
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.getContactAppointments(params.contactId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to get contact appointments');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to get contact appointments: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  private async getContactAppointments(params: MCPGetContactAppointmentsParams): Promise<GHLAppointment[]> {
-    const response = await this.ghlClient.getContactAppointments(params.contactId);
+  /**
+   * Add or remove tags from multiple contacts in one operation
+   * @param params Bulk tag update parameters
+   * @returns Standardized response with operation result
+   */
+  private async bulkUpdateContactTags(params: MCPBulkUpdateContactTagsParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !Array.isArray(params.contactIds) || !Array.isArray(params.tags) || !params.operation) {
+        throw new ValidationError('ContactIds, tags, and operation are required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to get contact appointments');
+      if (params.contactIds.length === 0 || params.tags.length === 0) {
+        throw new ValidationError('ContactIds and tags arrays must not be empty');
+      }
+
+      if (params.contactIds.length > 100) {
+        throw new ValidationError('Maximum 100 contacts allowed per bulk operation');
+      }
+
+      if (!['add', 'remove'].includes(params.operation)) {
+        throw new ValidationError('Operation must be either "add" or "remove"');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.bulkUpdateContactTags(
+          params.contactIds,
+          params.tags,
+          params.operation,
+          params.removeAllTags
+        )
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to bulk update contact tags');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to bulk update contact tags: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  // Bulk Operations
-  private async bulkUpdateContactTags(params: MCPBulkUpdateContactTagsParams): Promise<GHLBulkTagsResponse> {
-    const response = await this.ghlClient.bulkUpdateContactTags(
-      params.contactIds,
-      params.tags,
-      params.operation,
-      params.removeAllTags
-    );
+  /**
+   * Bulk update business association for multiple contacts
+   * @param params Bulk business update parameters
+   * @returns Standardized response with operation result
+   */
+  private async bulkUpdateContactBusiness(params: MCPBulkUpdateContactBusinessParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !Array.isArray(params.contactIds)) {
+        throw new ValidationError('ContactIds are required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to bulk update contact tags');
+      if (params.contactIds.length === 0) {
+        throw new ValidationError('ContactIds array must not be empty');
+      }
+
+      if (params.contactIds.length > 100) {
+        throw new ValidationError('Maximum 100 contacts allowed per bulk operation');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.bulkUpdateContactBusiness(params.contactIds, params.businessId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to bulk update contact business');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to bulk update contact business: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  private async bulkUpdateContactBusiness(params: MCPBulkUpdateContactBusinessParams): Promise<GHLBulkBusinessResponse> {
-    const response = await this.ghlClient.bulkUpdateContactBusiness(params.contactIds, params.businessId);
+  /**
+   * Add followers to a contact
+   * @param params Add followers parameters
+   * @returns Standardized response with updated followers data
+   */
+  private async addContactFollowers(params: MCPAddContactFollowersParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !Array.isArray(params.followers)) {
+        throw new ValidationError('ContactId and followers array are required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to bulk update contact business');
+      if (params.followers.length === 0) {
+        throw new ValidationError('Followers array must not be empty');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.addContactFollowers(params.contactId, params.followers)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to add contact followers');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to add contact followers: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  // Followers Management
-  private async addContactFollowers(params: MCPAddContactFollowersParams): Promise<GHLFollowersResponse> {
-    const response = await this.ghlClient.addContactFollowers(params.contactId, params.followers);
+  /**
+   * Remove followers from a contact
+   * @param params Remove followers parameters
+   * @returns Standardized response with updated followers data
+   */
+  private async removeContactFollowers(params: MCPRemoveContactFollowersParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !Array.isArray(params.followers)) {
+        throw new ValidationError('ContactId and followers array are required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to add contact followers');
+      if (params.followers.length === 0) {
+        throw new ValidationError('Followers array must not be empty');
+      }
+
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.removeContactFollowers(params.contactId, params.followers)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to remove contact followers');
+      }
+
+      return {
+        success: true,
+        data: response.data,
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to remove contact followers: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  private async removeContactFollowers(params: MCPRemoveContactFollowersParams): Promise<GHLFollowersResponse> {
-    const response = await this.ghlClient.removeContactFollowers(params.contactId, params.followers);
+  /**
+   * Add contact to a marketing campaign
+   * @param params Add to campaign parameters
+   * @returns Standardized response indicating success or failure
+   */
+  private async addContactToCampaign(params: MCPAddContactToCampaignParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.campaignId) {
+        throw new ValidationError('ContactId and campaignId are required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to remove contact followers');
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.addContactToCampaign(params.contactId, params.campaignId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to add contact to campaign');
+      }
+
+      return {
+        success: true,
+        data: { succeeded: response.data?.succeded || false },
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to add contact to campaign: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  // Campaign Management
-  private async addContactToCampaign(params: MCPAddContactToCampaignParams): Promise<{ succeded: boolean }> {
-    const response = await this.ghlClient.addContactToCampaign(params.contactId, params.campaignId);
+  /**
+   * Remove contact from a specific campaign
+   * @param params Remove from campaign parameters
+   * @returns Standardized response indicating success or failure
+   */
+  private async removeContactFromCampaign(params: MCPRemoveContactFromCampaignParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.campaignId) {
+        throw new ValidationError('ContactId and campaignId are required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to add contact to campaign');
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.removeContactFromCampaign(params.contactId, params.campaignId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to remove contact from campaign');
+      }
+
+      return {
+        success: true,
+        data: { succeeded: response.data?.succeded || false },
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to remove contact from campaign: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  private async removeContactFromCampaign(params: MCPRemoveContactFromCampaignParams): Promise<{ succeded: boolean }> {
-    const response = await this.ghlClient.removeContactFromCampaign(params.contactId, params.campaignId);
+  /**
+   * Remove contact from all campaigns
+   * @param params Remove from all campaigns parameters
+   * @returns Standardized response indicating success or failure
+   */
+  private async removeContactFromAllCampaigns(params: MCPRemoveContactFromAllCampaignsParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId)) {
+        throw new ValidationError('Valid contactId is required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to remove contact from campaign');
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.removeContactFromAllCampaigns(params.contactId)
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to remove contact from all campaigns');
+      }
+
+      return {
+        success: true,
+        data: { succeeded: response.data?.succeded || false },
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to remove contact from all campaigns: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  private async removeContactFromAllCampaigns(params: MCPRemoveContactFromAllCampaignsParams): Promise<{ succeded: boolean }> {
-    const response = await this.ghlClient.removeContactFromAllCampaigns(params.contactId);
+  /**
+   * Enroll contact in automation workflow
+   * @param params Add to workflow parameters
+   * @returns Standardized response indicating success or failure
+   */
+  private async addContactToWorkflow(params: MCPAddContactToWorkflowParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.workflowId) {
+        throw new ValidationError('ContactId and workflowId are required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to remove contact from all campaigns');
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.addContactToWorkflow(
+          params.contactId,
+          params.workflowId,
+          params.eventStartTime
+        )
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to add contact to workflow');
+      }
+
+      return {
+        success: true,
+        data: { succeeded: response.data?.succeded || false },
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to add contact to workflow: ${error.message || String(error)}`);
     }
-
-    return response.data!;
   }
 
-  // Workflow Management
-  private async addContactToWorkflow(params: MCPAddContactToWorkflowParams): Promise<{ succeded: boolean }> {
-    const response = await this.ghlClient.addContactToWorkflow(
-      params.contactId,
-      params.workflowId,
-      params.eventStartTime
-    );
+  /**
+   * Unenroll contact from automation workflow
+   * @param params Remove from workflow parameters
+   * @returns Standardized response indicating success or failure
+   */
+  private async removeContactFromWorkflow(params: MCPRemoveContactFromWorkflowParams): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      // Validate input parameters
+      if (!params || !isValidContactId(params.contactId) || !params.workflowId) {
+        throw new ValidationError('ContactId and workflowId are required');
+      }
 
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to add contact to workflow');
+      // Execute API call with retry logic
+      const response = await retryWithExponentialBackoff(() => 
+        this.ghlClient.removeContactFromWorkflow(
+          params.contactId,
+          params.workflowId,
+          params.eventStartTime
+        )
+      );
+
+      if (!response.success) {
+        throw new APIError(response.error?.message || 'Failed to remove contact from workflow');
+      }
+
+      return {
+        success: true,
+        data: { succeeded: response.data?.succeded || false },
+        error: undefined
+      };
+    } catch (error: any) {
+      if (error instanceof ValidationError || error instanceof APIError) {
+        throw error;
+      }
+      throw new APIError(`Failed to remove contact from workflow: ${error.message || String(error)}`);
     }
-
-    return response.data!;
-  }
-
-  private async removeContactFromWorkflow(params: MCPRemoveContactFromWorkflowParams): Promise<{ succeded: boolean }> {
-    const response = await this.ghlClient.removeContactFromWorkflow(
-      params.contactId,
-      params.workflowId,
-      params.eventStartTime
-    );
-
-    if (!response.success) {
-      throw new Error(response.error?.message || 'Failed to remove contact from workflow');
-    }
-
-    return response.data!;
   }
 }
