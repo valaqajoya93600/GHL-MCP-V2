@@ -524,6 +524,145 @@ class GHLMCPHttpServer {
       }
     });
 
+    // Configuration test endpoint for debugging
+    this.app.get('/api/config/test', async (req, res) => {
+      try {
+        const testResult = {
+          timestamp: new Date().toISOString(),
+          ghlApi: {
+            baseUrl: this.ghlClient['config'].baseUrl,
+            version: this.ghlClient['config'].version,
+            locationId: this.ghlClient['config'].locationId,
+            hasApiKey: !!this.ghlClient['config'].accessToken,
+            apiKeyPreview: this.ghlClient['config'].accessToken ? `${this.ghlClient['config'].accessToken.substring(0, 10)}...${this.ghlClient['config'].accessToken.substring(this.ghlClient['config'].accessToken.length - 5)}` : 'NOT SET'
+          },
+          tests: {
+            apiConnection: 'pending',
+            invoiceAccess: 'pending'
+          }
+        };
+
+        const connectionTest = await this.ghlClient.testConnection();
+        if (connectionTest.success) {
+          testResult.tests.apiConnection = 'success';
+        } else {
+          testResult.tests.apiConnection = 'failed';
+        }
+
+        res.json(testResult);
+      } catch (error) {
+        console.error('[GHL MCP HTTP] Error testing configuration:', error);
+        res.status(500).json({
+          error: 'Configuration test failed',
+          details: (error as Error).message,
+          suggestions: [
+            'Check that GHL_API_KEY is set correctly',
+            'Check that GHL_LOCATION_ID is set correctly',
+            'Verify that API key is a Private Integration token (starts with "pit-")',
+            'Ensure Private Integration has "Invoices" scope enabled'
+          ]
+        });
+      }
+    });
+
+    // Get available invoice operations
+    this.app.get('/api/invoices/operations', (req, res) => {
+      res.json({
+        operations: [
+          {
+            name: 'list',
+            method: 'GET',
+            endpoint: '/invoices/?status=sent&limit=10',
+            description: 'List invoices with optional status filter',
+            parameters: {
+              status: 'draft|sent|paid|void|partially_paid',
+              limit: 'number',
+              offset: 'number',
+              contactId: 'filter by contact'
+            }
+          },
+          {
+            name: 'get',
+            method: 'GET',
+            endpoint: '/invoices/{invoiceId}',
+            description: 'Get invoice details and current status',
+            parameters: {
+              invoiceId: 'required'
+            }
+          },
+          {
+            name: 'create',
+            method: 'POST',
+            endpoint: '/invoices/',
+            description: 'Create new invoice (draft status)',
+            parameters: {
+              contactId: 'required',
+              currency: 'required',
+              invoiceItems: 'required array'
+            }
+          },
+          {
+            name: 'send',
+            method: 'POST',
+            endpoint: '/invoices/{invoiceId}/send',
+            description: 'Send invoice (draft → sent)',
+            parameters: {
+              invoiceId: 'required',
+              action: 'email|sms|sms_and_email|send_manually'
+            }
+          },
+          {
+            name: 'recordPayment',
+            method: 'POST',
+            endpoint: '/invoices/{invoiceId}/record-payment',
+            description: 'Record payment (→ paid/partially_paid)',
+            parameters: {
+              invoiceId: 'required',
+              amount: 'required number',
+              paymentDate: 'required ISO date',
+              paymentMethod: 'required'
+            }
+          },
+          {
+            name: 'void',
+            method: 'POST',
+            endpoint: '/invoices/{invoiceId}/void',
+            description: 'Void invoice (→ void)',
+            parameters: {
+              invoiceId: 'required',
+              reason: 'optional'
+            }
+          }
+        ],
+        statuses: [
+          {
+            status: 'draft',
+            displayName: 'Draft (Чернетка)',
+            editable: true,
+            transitions: ['sent', 'void']
+          },
+          {
+            status: 'sent',
+            displayName: 'Sent (Надіслано)',
+            editable: false,
+            transitions: ['paid', 'partially_paid', 'void']
+          },
+          {
+            status: 'paid',
+            displayName: 'Paid (Оплачено)',
+            editable: false,
+            transitions: []
+          },
+          {
+            status: 'void',
+            displayName: 'Void (Анульовано)',
+            editable: false,
+            transitions: []
+          }
+        ]
+      });
+    });
+
     // Streamable HTTP endpoint for modern MCP clients (ChatGPT, etc.)
     this.app.all('/mcp', async (req, res) => {
       try {
@@ -630,7 +769,11 @@ class GHLMCPHttpServer {
           mcp: '/mcp',
           invoices: {
             statusInfo: '/api/invoices/status-info',
-            changeStatus: '/api/invoices/change-status'
+            changeStatus: '/api/invoices/change-status',
+            operations: '/api/invoices/operations'
+          },
+          config: {
+            test: '/api/config/test'
           }
         },
         tools: this.getToolsCount(),
