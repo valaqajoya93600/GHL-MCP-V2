@@ -35,6 +35,7 @@ import { WorkflowTools } from './tools/workflow-tools';
 import { SurveyTools } from './tools/survey-tools';
 import { StoreTools } from './tools/store-tools';
 import { ProductsTools } from './tools/products-tools.js';
+import { InvoicesTools } from './tools/invoices-tools.js';
 import { GHLConfig } from './types/ghl-types';
 import { VoiceAITools } from './tools/voice-ai-tools.js';
 
@@ -66,6 +67,7 @@ class GHLMCPHttpServer {
   private storeTools: StoreTools;
   private productsTools: ProductsTools;
   private voiceAITools: VoiceAITools;
+  private invoicesTools: InvoicesTools;
   private port: number;
   private sseTransports: Map<string, SSEServerTransport> = new Map();
   private streamableTransports: Map<string, StreamableHTTPServerTransport> = new Map();
@@ -112,6 +114,7 @@ class GHLMCPHttpServer {
     this.storeTools = new StoreTools(this.ghlClient);
     this.productsTools = new ProductsTools(this.ghlClient);
     this.voiceAITools = new VoiceAITools(this.ghlClient);
+    this.invoicesTools = new InvoicesTools(this.ghlClient);
 
     // Setup MCP handlers
     this.setupMCPHandlers();
@@ -204,6 +207,7 @@ class GHLMCPHttpServer {
         const storeToolDefinitions = this.storeTools.getTools();
         const productsToolDefinitions = this.productsTools.getTools();
         const voiceAIToolDefinitions = this.voiceAITools.getTools();
+        const invoicesToolDefinitions = this.invoicesTools.getTools();
         
         const allTools = [
           ...contactToolDefinitions,
@@ -223,7 +227,8 @@ class GHLMCPHttpServer {
           ...surveyToolDefinitions,
           ...storeToolDefinitions,
           ...productsToolDefinitions,
-          ...voiceAIToolDefinitions
+          ...voiceAIToolDefinitions,
+          ...invoicesToolDefinitions
         ];
         
         console.log(`[GHL MCP HTTP] Registered ${allTools.length} tools total`);
@@ -286,6 +291,8 @@ class GHLMCPHttpServer {
           result = await this.storeTools.executeStoreTool(name, args || {});
         } else if (this.isProductsTool(name)) {
           result = await this.productsTools.executeProductsTool(name, args || {});
+        } else if (this.isInvoicesTool(name)) {
+          result = await this.invoicesTools.handleToolCall(name, args || {});
         } else {
           throw new Error(`Unknown tool: ${name}`);
         }
@@ -370,13 +377,150 @@ class GHLMCPHttpServer {
         const surveyTools = this.surveyTools.getTools();
         const storeTools = this.storeTools.getTools();
         const productsTools = this.productsTools.getTools();
+        const voiceAITools = this.voiceAITools.getTools();
+        const invoicesTools = this.invoicesTools.getTools();
         
         res.json({
-          tools: [...contactTools, ...conversationTools, ...blogTools, ...opportunityTools, ...calendarTools, ...emailTools, ...locationTools, ...emailISVTools, ...socialMediaTools, ...mediaTools, ...objectTools, ...associationTools, ...customFieldV2Tools, ...workflowTools, ...surveyTools, ...storeTools, ...productsTools],
-          count: contactTools.length + conversationTools.length + blogTools.length + opportunityTools.length + calendarTools.length + emailTools.length + locationTools.length + emailISVTools.length + socialMediaTools.length + mediaTools.length + objectTools.length + associationTools.length + customFieldV2Tools.length + workflowTools.length + surveyTools.length + storeTools.length + productsTools.length
+          tools: [...contactTools, ...conversationTools, ...blogTools, ...opportunityTools, ...calendarTools, ...emailTools, ...locationTools, ...emailISVTools, ...socialMediaTools, ...mediaTools, ...objectTools, ...associationTools, ...customFieldV2Tools, ...workflowTools, ...surveyTools, ...storeTools, ...productsTools, ...voiceAITools, ...invoicesTools],
+          count: contactTools.length + conversationTools.length + blogTools.length + opportunityTools.length + calendarTools.length + emailTools.length + locationTools.length + emailISVTools.length + socialMediaTools.length + mediaTools.length + objectTools.length + associationTools.length + customFieldV2Tools.length + workflowTools.length + surveyTools.length + storeTools.length + productsTools.length + voiceAITools.length + invoicesTools.length
         });
       } catch (error) {
         res.status(500).json({ error: 'Failed to list tools' });
+      }
+    });
+
+    // Invoice Management API endpoints for n8n integration
+    this.app.get('/api/invoices/status-info', (req, res) => {
+      res.json({
+        description: 'Invoice Status Management Guide',
+        availableStatuses: [
+          {
+            status: 'draft',
+            displayName: 'Draft (Чернетка)',
+            description: 'Invoice created but not sent to customer. Can be freely edited.'
+          },
+          {
+            status: 'sent',
+            displayName: 'Sent (Надіслано)',
+            description: 'Invoice successfully delivered to customer.'
+          },
+          {
+            status: 'paid',
+            displayName: 'Paid (Оплачено)',
+            description: 'Customer has fully paid the invoice.'
+          },
+          {
+            status: 'void',
+            displayName: 'Void (Анульовано)',
+            description: 'Invoice has been cancelled. Only unpaid invoices can be voided.'
+          },
+          {
+            status: 'partially_paid',
+            displayName: 'Partially Paid (Частково оплачено)',
+            description: 'Customer has made partial payment.'
+          },
+          {
+            status: 'payment_processing',
+            displayName: 'Payment Processing (Обробка платежу)',
+            description: 'Payment is being processed.'
+          }
+        ],
+        toolsForStatusManagement: [
+          {
+            tool: 'list_invoices',
+            action: 'List invoices with optional status filter',
+            statusRelated: true
+          },
+          {
+            tool: 'get_invoice',
+            action: 'Get invoice details and current status',
+            statusRelated: true
+          },
+          {
+            tool: 'create_invoice',
+            action: 'Create new invoice (starts in draft status)',
+            statusRelated: true,
+            resultStatus: 'draft'
+          },
+          {
+            tool: 'send_invoice',
+            action: 'Send invoice to customer',
+            statusRelated: true,
+            resultStatus: 'sent',
+            fromStatus: 'draft'
+          },
+          {
+            tool: 'record_invoice_payment',
+            action: 'Record payment on invoice',
+            statusRelated: true,
+            resultStatus: 'paid',
+            fromStatus: ['sent', 'draft']
+          },
+          {
+            tool: 'void_invoice',
+            action: 'Cancel/void invoice',
+            statusRelated: true,
+            resultStatus: 'void',
+            fromStatus: ['draft', 'sent']
+          }
+        ]
+      });
+    });
+
+    this.app.post('/api/invoices/change-status', async (req, res) => {
+      try {
+        const { invoiceId, targetStatus, action, ...params } = req.body;
+
+        if (!invoiceId || !targetStatus) {
+          res.status(400).json({
+            error: 'Missing required parameters: invoiceId and targetStatus'
+          });
+          return;
+        }
+
+        let result: any;
+
+        switch (targetStatus) {
+          case 'sent':
+            result = await this.invoicesTools.handleToolCall('send_invoice', {
+              invoiceId,
+              ...params
+            });
+            break;
+
+          case 'paid':
+            result = await this.invoicesTools.handleToolCall('record_invoice_payment', {
+              invoiceId,
+              paymentData: params
+            });
+            break;
+
+          case 'void':
+            result = await this.invoicesTools.handleToolCall('void_invoice', {
+              invoiceId,
+              voidData: params
+            });
+            break;
+
+          default:
+            res.status(400).json({
+              error: `Cannot directly change to status: ${targetStatus}. Only 'sent', 'paid', 'void' are supported.`
+            });
+            return;
+        }
+
+        res.json({
+          success: true,
+          invoiceId,
+          targetStatus,
+          result
+        });
+      } catch (error) {
+        console.error('[GHL MCP HTTP] Error changing invoice status:', error);
+        res.status(500).json({
+          error: 'Failed to change invoice status',
+          details: (error as Error).message
+        });
       }
     });
 
@@ -483,7 +627,11 @@ class GHLMCPHttpServer {
           capabilities: '/capabilities',
           tools: '/tools',
           sse: '/sse',
-          mcp: '/mcp'
+          mcp: '/mcp',
+          invoices: {
+            statusInfo: '/api/invoices/status-info',
+            changeStatus: '/api/invoices/change-status'
+          }
         },
         tools: this.getToolsCount(),
         documentation: 'https://github.com/your-repo/ghl-mcp-server'
@@ -513,6 +661,7 @@ class GHLMCPHttpServer {
       surveys: this.surveyTools.getTools().length,
       store: this.storeTools.getTools().length,
       products: this.productsTools.getTools().length,
+      invoices: this.invoicesTools.getTools().length,
       total: this.contactTools.getToolDefinitions().length + 
              this.conversationTools.getToolDefinitions().length + 
              this.blogTools.getToolDefinitions().length +
@@ -529,7 +678,8 @@ class GHLMCPHttpServer {
              this.workflowTools.getTools().length +
              this.surveyTools.getTools().length +
              this.storeTools.getTools().length +
-             this.productsTools.getTools().length
+             this.productsTools.getTools().length +
+             this.invoicesTools.getTools().length
     };
   }
 
@@ -746,6 +896,26 @@ class GHLMCPHttpServer {
       'ghl_bulk_update_product_reviews'
     ];
     return productsToolNames.includes(toolName);
+  }
+
+  private isInvoicesTool(toolName: string): boolean {
+    const invoicesToolNames = [
+      'create_invoice_template', 'list_invoice_templates', 'get_invoice_template',
+      'update_invoice_template', 'delete_invoice_template', 'update_invoice_template_late_fees',
+      'update_invoice_template_payment_methods',
+      'create_invoice_schedule', 'list_invoice_schedules', 'get_invoice_schedule',
+      'update_invoice_schedule', 'delete_invoice_schedule', 'schedule_invoice_schedule',
+      'auto_payment_invoice_schedule', 'cancel_invoice_schedule',
+      'create_invoice', 'list_invoices', 'get_invoice', 'update_invoice',
+      'delete_invoice', 'void_invoice', 'send_invoice', 'record_invoice_payment',
+      'text2pay_invoice', 'update_invoice_last_visited',
+      'create_estimate', 'list_estimates', 'update_estimate', 'delete_estimate',
+      'send_estimate', 'create_invoice_from_estimate', 'update_estimate_last_visited',
+      'generate_invoice_number', 'generate_estimate_number',
+      'list_estimate_templates', 'create_estimate_template', 'update_estimate_template',
+      'delete_estimate_template', 'preview_estimate_template'
+    ];
+    return invoicesToolNames.includes(toolName);
   }
 
   /**
